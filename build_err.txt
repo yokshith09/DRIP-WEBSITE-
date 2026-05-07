@@ -1,0 +1,35 @@
+
+> drip@1.0.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module 'tailwindcss'
+Require stack:
+- C:\Users\yoksh\Downloads\wearshare-final\drip\.next\build\chunks\[root-of-the-server]__51225daf._.js
+- C:\Users\yoksh\Downloads\wearshare-final\drip\.next\build\chunks\[turbopack]_runtime.js
+- C:\Users\yoksh\Downloads\wearshare-final\drip\.next\build\postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1192:37)]
+    [at TracingChannel.traceSync (node:diagnostics_channel:322:14)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)]
+    [at Module.require (node:internal/modules/cjs/loader:1463:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    at turbopack:///[turbopack-node]/transforms/postcss.ts:49:25 [C:\Users\yoksh\Downloads\wearshare-final\drip\.next\build\chunks\[root-of-the-server]__51225daf._.js:134:33]
+    [at <anonymous>]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at ignore-listed frames
