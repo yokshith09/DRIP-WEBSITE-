@@ -1,120 +1,209 @@
 'use client';
 
-import { ChevronLeft, Sparkles, SlidersHorizontal, Share2 } from 'lucide-react';
+import { ChevronLeft, Sparkles, SlidersHorizontal, Share2, ArrowRight, UserCheck, ShieldAlert, Award } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useStyleDNAStore } from '@/store/styleDNA';
+import { getTopMatches } from '@/lib/productMatcher';
+import { PRODUCTS } from '@/data/products';
+import dynamic from 'next/dynamic';
 
-// Mock values for the radar chart
-const DNA_DATA = [
-  { label: 'Minimalist', value: 85, color: '#1A1A2E' }, // Navy
-  { label: 'Streetwear', value: 65, color: '#E94560' }, // Coral
-  { label: 'Vintage', value: 30, color: '#C9A84C' }, // Gold
-  { label: 'Avant-Garde', value: 20, color: '#9CA3AF' }, // Gray
-  { label: 'Techwear', value: 45, color: '#4B5563' },
-];
+const StyleDNAOnboarding = dynamic(() => import('@/components/StyleDNAOnboarding'), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full max-w-xl mx-auto bg-white rounded-3xl p-8 border border-gray-100 shadow-xl flex flex-col items-center justify-center min-h-[400px]">
+      <div className="w-10 h-10 border-2 border-drip-navy/20 rounded-full animate-ping mb-4"></div>
+      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">Loading DNA Scanner...</span>
+    </div>
+  )
+});
 
-export default function StyleDNA() {
-  // Simple CSS radar polygon approximation for demonstration (a hexagon shape)
-  // In a real app, use a charting library like Recharts or Chart.js
-  
+export default function StyleDNAPage() {
+  const { dna, resetDNA } = useStyleDNAStore();
+
+  // If onboarding is not completed, display the scanning wizard
+  if (!dna.completedOnboarding) {
+    return (
+      <main className="min-h-screen bg-drip-white pb-20 pt-10 px-4 flex flex-col justify-center">
+        {/* Header */}
+        <header className="fixed top-0 w-full h-14 bg-white/95 backdrop-blur-md z-40 flex items-center justify-between px-4 border-b border-gray-100 shadow-sm">
+          <Link href="/profile" className="p-2 -ml-2 text-gray-700 hover:text-drip-coral transition-colors">
+            <ChevronLeft className="w-6 h-6" />
+          </Link>
+          <div className="flex items-center space-x-2 text-gray-900">
+            <Sparkles className="w-5 h-5 text-drip-coral animate-pulse" />
+            <h1 className="text-sm font-black uppercase tracking-widest">DRIP DNA Scanner</h1>
+          </div>
+          <div className="w-10"></div> {/* Spacer */}
+        </header>
+
+        <div className="pt-10">
+          <StyleDNAOnboarding />
+        </div>
+      </main>
+    );
+  }
+
+  // If completed onboarding, display their styling results
+  const topMatches = getTopMatches(PRODUCTS, dna, 4);
+
   return (
-    <main className="min-h-screen bg-drip-white pb-32 overflow-x-hidden">
+    <main className="min-h-screen bg-[#F8F9FA] pb-32 overflow-x-hidden font-sans">
       {/* Header */}
-      <header className="fixed top-0 w-full h-14 bg-white z-40 flex items-center justify-between px-4 border-b border-drip-grey shadow-sm">
-        <Link href="/profile" className="p-2 -ml-2 text-drip-dark hover:text-drip-coral transition-colors">
+      <header className="fixed top-0 w-full h-14 bg-white/95 backdrop-blur-md z-40 flex items-center justify-between px-4 border-b border-gray-100 shadow-sm">
+        <Link href="/profile" className="p-2 -ml-2 text-gray-700 hover:text-drip-coral transition-colors">
           <ChevronLeft className="w-6 h-6" />
         </Link>
-        <div className="flex items-center space-x-2 text-drip-dark">
-          <Sparkles className="w-5 h-5 text-drip-coral" />
-          <h1 className="text-lg font-sans font-semibold">Style DNA</h1>
+        <div className="flex items-center space-x-2 text-gray-900">
+          <Sparkles className="w-5 h-5 text-drip-coral fill-drip-coral animate-pulse" />
+          <h1 className="text-sm font-black uppercase tracking-widest">Style DNA Blueprint</h1>
         </div>
-        <button className="p-2 -mr-2 text-drip-dark">
+        <button 
+          onClick={() => {
+            if (typeof navigator !== 'undefined') {
+              navigator.clipboard.writeText(window.location.href);
+              alert('Style DNA Link copied to clipboard!');
+            }
+          }}
+          className="p-2 -mr-2 text-gray-600 hover:text-black transition-colors"
+        >
           <Share2 className="w-5 h-5" />
         </button>
       </header>
 
-      <div className="hero-container !px-4 md:max-w-2xl mx-auto pt-20">
+      <div className="max-w-2xl mx-auto px-4 pt-20 space-y-6">
         
-        <div className="text-center mb-8">
-           <h2 className="text-3xl font-display text-drip-dark leading-tight">Your Unique <br/>Fashion Blueprint</h2>
-           <p className="text-sm text-drip-muted mt-3 max-w-sm mx-auto">
-             DRIP AI analyzes your browsing, likes, and purchases to build your personalized Style DNA profile.
+        {/* Editorial Splash */}
+        <div className="text-center py-4">
+           <h2 className="text-3xl font-display font-bold text-gray-900 leading-tight">Your Personal <br/>Fashion Blueprint</h2>
+           <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto">
+             Calculated via on-device machine learning scans. Proportions and palettes are locked.
            </p>
         </div>
 
-        {/* Radar Chart Visual (Mock using SVG) */}
-        <div className="bg-white rounded-[2rem] p-8 shadow-drip-card border border-drip-grey relative flex items-center justify-center mb-8 min-h-[340px]">
+        {/* Dynamic Premium DNA Profile Card */}
+        <div className="bg-gradient-to-br from-[#1E1E2F] to-[#0F0F1A] text-white p-6 rounded-3xl shadow-xl relative overflow-hidden border border-white/5">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-drip-green opacity-10 rounded-full blur-3xl"></div>
           
-          <div className="absolute top-4 left-4">
-             <span className="bg-drip-navy text-white text-[10px] font-bold px-2 py-1 tracking-wider rounded-sm uppercase">Auto-Updated</span>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-2">
+              <Award className="w-5 h-5 text-drip-green" />
+              <span className="text-[10px] text-gray-300 uppercase tracking-widest font-black">AI Verified Blueprint</span>
+            </div>
+            <button 
+              onClick={resetDNA}
+              className="text-[10px] text-drip-green hover:underline font-bold uppercase tracking-wider flex items-center space-x-1"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Rescan Profile</span>
+            </button>
           </div>
 
-          <svg width="280" height="280" viewBox="0 0 100 100" className="overflow-visible">
-            {/* Background Webbings */}
-            {[20, 40, 60, 80, 100].map(radius => (
-               <polygon 
-                 key={radius}
-                 points="50,0 97.5,34.5 79.3,90.4 20.6,90.4 2.4,34.5"
-                 fill="none" 
-                 stroke="#E8E8ED" 
-                 strokeWidth="0.5"
-                 transform={`scale(${radius/100})`}
-                 transform-origin="50 50"
-               />
+          <div className="grid grid-cols-2 gap-6 border-t border-white/10 pt-6">
+            <div className="space-y-1">
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold block">Silhouette Type</span>
+              <span className="text-base font-bold capitalize text-drip-green">{dna.bodyShape} Shape</span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold block">Skin Undertone</span>
+              <span className="text-base font-bold capitalize text-drip-coral flex items-center space-x-2">
+                <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: dna.skinTone }}></span>
+                <span>{dna.skinToneCategory}</span>
+              </span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold block">Style Vibe</span>
+              <span className="text-base font-bold capitalize text-white">{dna.styleVibe}</span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold block">User Height</span>
+              <span className="text-base font-bold text-white">{dna.height} cm</span>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 mt-6 pt-4 text-[11px] text-gray-300 leading-relaxed">
+            <span className="font-bold text-drip-green uppercase tracking-widest block mb-1">Stylist Recommendation:</span>
+            Favor products tailored for a <span className="text-white font-bold">{dna.bodyShape}</span> silhouette. Reframe outfits around the <span className="text-white font-bold">{dna.styleVibe}</span> aesthetic, selecting items in our dynamic skin tone recommendation colors.
+          </div>
+        </div>
+
+        {/* Color Palette Display */}
+        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-gray-800 flex items-center space-x-2">
+            <UserCheck className="w-4 h-4 text-drip-green" />
+            <span>Recommended Color Seasons</span>
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Best Matches</span>
+              <div className="flex flex-wrap gap-1.5">
+                {dna.colorPalette?.map(color => (
+                  <span key={color} className="px-2 py-1 bg-drip-green/10 text-drip-green border border-drip-green/20 text-[10px] font-bold rounded-lg capitalize">
+                    {color}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Colors to Avoid</span>
+              <div className="flex flex-wrap gap-1.5">
+                {dna.avoidColors?.map(color => (
+                  <span key={color} className="px-2 py-1 bg-red-50 text-red-500 border border-red-100 text-[10px] font-bold rounded-lg capitalize">
+                    {color}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Curated Catalog Row based on Style DNA matches */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-end px-1">
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-800">
+              Personalized DNA Fits
+            </h3>
+            <Link 
+              href="/shopper-ai" 
+              className="text-[10px] font-black uppercase tracking-wider text-drip-navy hover:text-black flex items-center space-x-1"
+            >
+              <span>Consult Stylist</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="flex overflow-x-auto hide-scrollbar space-x-4 pb-2 px-1">
+            {topMatches.map(product => (
+              <Link 
+                href={`/product/${product.id}`} 
+                key={product.id} 
+                className="w-[160px] bg-white border border-gray-150 rounded-2xl p-2.5 shrink-0 shadow-xs cursor-pointer hover:shadow-md hover:border-gray-200 transition-all group"
+              >
+                <div className="w-full h-32 bg-gray-50 rounded-xl relative overflow-hidden mb-2">
+                  <Image 
+                    src={product.image} 
+                    alt={product.name} 
+                    fill 
+                    className="object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-300" 
+                  />
+                  <div className="absolute top-1.5 left-1.5 bg-drip-green text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                    {product.matchScore}% Match
+                  </div>
+                </div>
+                <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{product.brand}</div>
+                <div className="text-xs font-bold text-gray-800 truncate mb-0.5">{product.name}</div>
+                <div className="text-xs font-black text-black">{product.price}</div>
+              </Link>
             ))}
-            
-            {/* Axes */}
-            <line x1="50" y1="50" x2="50" y2="0" stroke="#E8E8ED" strokeWidth="0.5" />
-            <line x1="50" y1="50" x2="97.5" y2="34.5" stroke="#E8E8ED" strokeWidth="0.5" />
-            <line x1="50" y1="50" x2="79.3" y2="90.4" stroke="#E8E8ED" strokeWidth="0.5" />
-            <line x1="50" y1="50" x2="20.6" y2="90.4" stroke="#E8E8ED" strokeWidth="0.5" />
-            <line x1="50" y1="50" x2="2.4" y2="34.5" stroke="#E8E8ED" strokeWidth="0.5" />
-
-            {/* Data Polygon Shape mapped to attributes */}
-            {/* Top(Minimalist:85), Right-Top(Streetwear:65), Right-Bot(Vintage:30), Left-Bot(Avant-Garde:20), Left-Top(Techwear:45) */}
-            <polygon 
-              points="50,7.5 80.8,40 58.8,62.1 40.1,58 28.5,33.5" 
-              fill="rgba(233, 69, 96, 0.2)" 
-              stroke="#E94560" 
-              strokeWidth="1.5"
-            />
-            {/* Points */}
-            <circle cx="50" cy="7.5" r="2" fill="#1A1A2E" />
-            <circle cx="80.8" cy="40" r="2" fill="#E94560" />
-            <circle cx="58.8" cy="62.1" r="2" fill="#C9A84C" />
-            <circle cx="40.1" cy="58" r="2" fill="#9CA3AF" />
-            <circle cx="28.5" cy="33.5" r="2" fill="#4B5563" />
-          </svg>
-
-          {/* Labels Absolute positioned around SVG */}
-          <span className="absolute top-2 text-[10px] font-bold text-drip-navy uppercase tracking-widest bg-white/80 px-1 backdrop-blur-sm">Minimalist</span>
-          <span className="absolute right-0 top-1/4 translate-x-2 text-[10px] font-bold text-drip-coral uppercase tracking-widest bg-white/80 px-1 backdrop-blur-sm">Streetwear</span>
-          <span className="absolute right-8 bottom-6 text-[10px] font-bold text-drip-gold uppercase tracking-widest bg-white/80 px-1 backdrop-blur-sm">Vintage</span>
-          <span className="absolute left-4 bottom-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/80 px-1 backdrop-blur-sm">Avant-Garde</span>
-          <span className="absolute left-0 top-1/4 -translate-x-2 text-[10px] font-bold text-gray-700 uppercase tracking-widest bg-white/80 px-1 backdrop-blur-sm">Techwear</span>
+          </div>
         </div>
 
-        {/* Breakdown List */}
-        <div className="bg-white rounded-drip-card border border-drip-grey overflow-hidden shadow-sm mb-8">
-           <div className="p-4 border-b border-drip-grey bg-gray-50 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-drip-dark uppercase tracking-wider">DNA Breakdown</h3>
-              <button className="text-xs text-drip-navy font-bold hover:underline flex items-center">
-                 <SlidersHorizontal className="w-3 h-3 mr-1" /> Retake Quiz
-              </button>
-           </div>
-           <div>
-              {DNA_DATA.map((item, idx) => (
-                 <div key={item.label} className={`p-4 flex items-center ${idx !== DNA_DATA.length - 1 ? 'border-b border-drip-grey' : ''}`}>
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }}></div>
-                    <span className="ml-3 text-sm font-semibold text-drip-dark flex-grow">{item.label}</span>
-                    <span className="text-sm font-bold text-drip-muted">{item.value}%</span>
-                 </div>
-              ))}
-           </div>
-        </div>
-
-        <button className="w-full bg-drip-navy text-white py-4 rounded-drip-btn font-semibold tracking-widest uppercase hover:bg-opacity-90 transition-opacity">
-           Shop My DNA Matches
-        </button>
+        <Link 
+          href="/shopper-ai"
+          className="w-full bg-drip-navy hover:bg-black text-white text-center py-4 rounded-2xl font-bold tracking-widest uppercase text-xs block transition-all shadow-md mt-4"
+        >
+          Consult AI Stylist on these matches
+        </Link>
 
       </div>
     </main>

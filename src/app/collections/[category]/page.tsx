@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, User, ShoppingCart, Sparkles, Star, Heart, SlidersHorizontal, ChevronRight, Scissors } from 'lucide-react';
+import { Sparkles, Star, Heart, SlidersHorizontal, ChevronRight, Scissors } from 'lucide-react';
 import { PRODUCTS } from '../../../data/products';
 import { Product } from '../../../components/ProductCard';
 import { useParams } from 'next/navigation';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const SECTION_MAP: Record<string, string[]> = {
   mens:        ['Shirts', 'Pants', 'Jeans', 'Polos'],
@@ -115,38 +117,7 @@ export default function CollectionPage() {
 
   return (
     <main className="min-h-screen bg-[#FAF9F7] font-sans text-gray-900">
-      {/* ── HEADER ── */}
-      <header className="sticky top-0 w-full h-[56px] bg-white z-50 border-b border-gray-100 shadow-sm flex items-center px-5 md:px-10">
-        <div className="flex items-center space-x-4">
-          <button className="p-1.5 hover:bg-gray-50 rounded-md lg:hidden" aria-label="Menu">
-            <Menu className="w-5 h-5" />
-          </button>
-          <Link href="/" className="text-xl font-black tracking-tight">DRIP</Link>
-        </div>
-        <nav className="hidden lg:flex items-center space-x-7 ml-10">
-          {['MEN', 'WOMEN', 'ACCESSORIES', 'AI STUDIO'].map((item) => (
-            <Link
-              key={item}
-              href={
-                item === 'AI STUDIO'
-                  ? '/avatar-studio'
-                  : item === 'MEN'
-                  ? '/collections/mens'
-                  : item === 'WOMEN'
-                  ? '/collections/womens'
-                  : '/collections/accessories'
-              }
-              className="text-[11px] font-bold tracking-[0.15em] text-gray-600 hover:text-black transition-colors"
-            >
-              {item}
-            </Link>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center space-x-3">
-          <Link href="/profile" className="p-2 hover:bg-gray-50 rounded-md"><User className="w-[18px] h-[18px] text-gray-500" /></Link>
-          <Link href="/cart" className="p-2 hover:bg-gray-50 rounded-md"><ShoppingCart className="w-[18px] h-[18px] text-gray-500" /></Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* ── AI FITTING ROOM BANNER ── */}
       <div className="bg-gray-950 text-white py-3 px-5 flex items-center justify-center gap-3 text-center">
@@ -283,11 +254,7 @@ export default function CollectionPage() {
         </Link>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-white py-8 px-5 md:px-10 border-t border-gray-100 text-center">
-        <Link href="/" className="text-xl font-black tracking-tight block mb-3">DRIP</Link>
-        <p className="text-gray-400 text-[11px] font-medium">© 2026 DRIP FASHION INC. — AI-POWERED VIRTUAL TRY-ON</p>
-      </footer>
+      <Footer />
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }

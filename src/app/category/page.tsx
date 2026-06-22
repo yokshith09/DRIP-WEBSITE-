@@ -5,8 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Heart, User, ShoppingBag, SlidersHorizontal, ChevronDown, X, Menu, MapPin, HeadphonesIcon, ShoppingCart, Star } from 'lucide-react';
 import SmartFilter from '../../components/SmartFilter';
-
-const NAV_LINKS = ['MEN', 'WOMEN', 'KIDS', 'BEAUTY', 'HOME & KITCHEN', 'ACCESSORIES'];
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const CATALOG = [
   { id: 1, name: 'Minimalist Street Jacket', brand: 'Y-3', price: '₹ 4,299', original: '₹ 6,499', rating: '4.8', reviews: '12k', image: '/images/jacket.png', isNew: true },
@@ -24,53 +24,7 @@ export default function CategoryPage() {
 
   return (
     <main className="min-h-screen pb-20 bg-white">
-      {/* Optimized Header (Shared with Home) */}
-      <header className="sticky top-0 w-full h-20 bg-white z-50 border-b border-gray-200 shadow-sm flex items-center px-4 md:px-8">
-        <div className="flex items-center space-x-4">
-          <button className="p-1 hover:bg-gray-100 rounded-md transition-colors">
-             <Menu className="w-6 h-6 text-drip-dark" />
-          </button>
-          <Link href="/" className="text-2xl font-display font-black tracking-widest text-[#0055A4] flex items-center">
-            DRIP
-          </Link>
-        </div>
-
-        <nav className="hidden lg:flex items-center space-x-8 ml-10">
-          {NAV_LINKS.map(link => (
-            <button key={link} className="text-[12px] font-bold tracking-wide hover:text-[#0055A4] transition-colors">
-              {link}
-            </button>
-          ))}
-        </nav>
-
-        {/* Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-sm mx-10 relative">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <Search className="w-4 h-4 text-gray-400" />
-          </div>
-          <input 
-            type="text" 
-            placeholder="Search for &quot;Jackets&quot;" 
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm text-drip-dark focus:outline-none focus:ring-1 focus:ring-[#0055A4]/10 transition-all font-medium"
-          />
-        </div>
-
-        <div className="ml-auto flex items-center space-x-6 text-xs font-medium text-drip-dark">
-          <Link href="/profile" className="flex flex-col items-center hover:text-[#0055A4] transition-colors">
-            <User className="w-6 h-6 mb-1 text-gray-700" />
-            Account
-          </Link>
-          <Link href="/profile/style-dna" className="flex flex-col items-center hover:text-[#0055A4] transition-colors">
-            <Heart className="w-6 h-6 mb-1 text-gray-700" />
-            Wishlist
-          </Link>
-          <Link href="/cart" className="flex flex-col items-center hover:text-[#0055A4] transition-colors relative">
-            <ShoppingCart className="w-6 h-6 mb-1 text-gray-700" />
-            Cart
-            <span className="absolute -top-1 right-0 w-4 h-4 bg-drip-coral text-white text-[9px] rounded-full flex items-center justify-center font-bold">2</span>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 mt-6">
         
@@ -159,6 +113,7 @@ export default function CategoryPage() {
       </div>
 
       <SmartFilter isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
+      <Footer />
     </main>
   );
 }

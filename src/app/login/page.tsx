@@ -1,14 +1,74 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Login() {
   const router = useRouter();
-  const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
-  const [phone, setPhone] = useState('');
+  const supabase = createClient();
+  
+  const [step, setStep] = useState<'EMAIL' | 'OTP'>('EMAIL');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); // 6-digit OTP from Supabase
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSendOtp = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        }
+      });
+      if (error) throw error;
+      setStep('OTP');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = otp.join('');
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email'
+      });
+      
+      if (error) throw error;
+      
+      router.push('/');
+      router.refresh(); // Refresh layout to grab new session
+    } catch (err: any) {
+      setError(err.message || 'Invalid verification code.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^[0-9]*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
 
   return (
     <main className="min-h-screen bg-drip-white flex flex-col justify-center relative">
@@ -23,67 +83,71 @@ export default function Login() {
           <p className="text-sm font-medium text-drip-muted uppercase tracking-widest mt-2">Wear Your World</p>
         </div>
 
-        {step === 'PHONE' ? (
+        {step === 'EMAIL' ? (
           <div className="space-y-6">
             <h2 className="text-2xl font-display text-drip-dark mb-4">Welcome Back</h2>
             <div>
-              <label className="block text-xs font-semibold text-drip-muted uppercase tracking-wider mb-2">Mobile Number</label>
+              <label className="block text-xs font-semibold text-drip-muted uppercase tracking-wider mb-2">Email Address</label>
               <div className="flex bg-white rounded-drip-input border border-drip-grey overflow-hidden focus-within:border-drip-navy transition-colors">
-                <span className="flex items-center justify-center px-4 font-semibold text-drip-dark border-r border-drip-grey bg-gray-50">+91</span>
                 <input 
-                  type="tel" 
-                  maxLength={10}
-                  placeholder="Enter your 10-digit number"
+                  type="email" 
+                  placeholder="Enter your email"
                   className="w-full px-4 py-4 text-base focus:outline-none"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </div>
             </div>
 
+            {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+
             <button 
-              onClick={() => setStep('OTP')}
-              disabled={phone.length < 10}
-              className={`w-full py-4 rounded-drip-btn font-semibold tracking-widest uppercase flex justify-center items-center transition-opacity ${phone.length === 10 ? 'bg-drip-navy text-white hover:bg-opacity-90' : 'bg-drip-grey text-drip-muted cursor-not-allowed'}`}
+              onClick={handleSendOtp}
+              disabled={!email.includes('@') || isLoading}
+              className={`w-full py-4 rounded-drip-btn font-semibold tracking-widest uppercase flex justify-center items-center transition-opacity ${email.includes('@') ? 'bg-drip-navy text-white hover:bg-opacity-90' : 'bg-drip-grey text-drip-muted cursor-not-allowed'}`}
             >
-              Get OTP <ArrowRight className="w-4 h-4 ml-2" />
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Get OTP <ArrowRight className="w-4 h-4 ml-2" /></>}
             </button>
 
             <div className="relative flex items-center py-6">
               <div className="flex-grow border-t border-drip-grey"></div>
-              <span className="shrink-0 px-4 text-xs font-semibold text-drip-muted uppercase tracking-wider">Or continue with</span>
+              <span className="shrink-0 px-4 text-xs font-semibold text-drip-muted uppercase tracking-wider">Or continue securely</span>
               <div className="flex-grow border-t border-drip-grey"></div>
             </div>
 
-            <div className="space-y-3">
-              <button className="w-full bg-white border border-drip-grey text-drip-dark py-4 rounded-drip-btn font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center">
-                <span className="mr-3">🍎</span> Continue with Apple
-              </button>
-              <button className="w-full bg-white border border-drip-grey text-drip-dark py-4 rounded-drip-btn font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center">
-                <span className="mr-3">🇬</span> Continue with Google
-              </button>
-            </div>
+            <p className="text-center text-xs text-drip-muted">
+              By using Email authentication, we secure your Style DNA and Cart directly to your secure Supabase Vault.
+            </p>
           </div>
         ) : (
           <div className="space-y-6">
             <h2 className="text-2xl font-display text-drip-dark mb-2">Verify OTP</h2>
-            <p className="text-sm text-drip-muted mb-6">Enter the 4-digit code sent to +91 {phone} <button onClick={() => setStep('PHONE')} className="text-drip-coral underline ml-1">Edit</button></p>
+            <p className="text-sm text-drip-muted mb-6">Enter the 6-digit code sent to {email} <button onClick={() => setStep('EMAIL')} className="text-drip-coral underline ml-1">Edit</button></p>
             
-            <div className="grid grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(idx => (
+            <div className="grid grid-cols-6 gap-2">
+              {otp.map((digit, idx) => (
                 <input 
                   key={idx}
+                  id={`otp-${idx}`}
                   type="text" 
                   maxLength={1}
-                  className="w-full h-14 text-center text-xl font-bold bg-white rounded-drip-input border border-drip-grey focus:outline-none focus:border-drip-navy"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(idx, e.target.value)}
+                  className="w-full h-12 text-center text-lg font-bold bg-white rounded-xl border border-drip-grey focus:outline-none focus:border-drip-navy"
                 />
               ))}
             </div>
 
-            <button onClick={() => router.push('/')} className="w-full bg-drip-navy text-white py-4 rounded-drip-btn font-semibold tracking-widest uppercase mt-4 hover:bg-opacity-90 transition-opacity">
-              Verify & Login
+            {error && <p className="text-xs text-red-500 font-medium text-center">{error}</p>}
+
+            <button 
+              onClick={handleVerifyOtp}
+              disabled={otp.join('').length < 6 || isLoading}
+              className="w-full bg-drip-navy text-white py-4 rounded-drip-btn font-semibold tracking-widest uppercase mt-4 hover:bg-opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Login'}
             </button>
-            <p className="text-center text-sm font-semibold text-drip-muted underline mt-4 cursor-pointer hover:text-drip-dark">Resend OTP</p>
+            <p onClick={handleSendOtp} className="text-center text-sm font-semibold text-drip-muted underline mt-4 cursor-pointer hover:text-drip-dark">Resend OTP</p>
           </div>
         )}
       </div>
@@ -92,3 +156,4 @@ export default function Login() {
     </main>
   );
 }
+

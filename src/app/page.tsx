@@ -5,6 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Heart, User, ShoppingBag, Menu, Sparkles, Truck, ShieldCheck, Crown, ChevronLeft, ChevronRight, Scissors, Wind, Settings, Shield } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { PRODUCTS } from '../data/products';
 
 // ═══════════════════════════════════════════════════════════════
 // DATA
@@ -22,19 +25,9 @@ const MAIN_COLLECTIONS = [
   { name: 'ACCESSORIES', img: '/images/hero/accessories-collection.png', href: '/collections/accessories' },
 ];
 
-const MENS_PRODUCTS = [
-  { id: 'm1', name: 'Oxford Cotton Shirt', brand: 'Ralph Lauren', price: '₹ 4,500', originalPrice: '₹ 6,000', rating: 4.8, reviews: '2k', image: '/images/hero/cat-shirts.png', isNew: true, matchPercentage: 94 },
-  { id: 'm2', name: 'Tailored Chinos', brand: 'Hugo Boss', price: '₹ 5,200', originalPrice: '₹ 7,500', rating: 4.7, reviews: '1.5k', image: '/images/hero/cat-trousers.png', isNew: false, matchPercentage: 88 },
-  { id: 'm3', name: 'Raw Selvedge Denim', brand: 'Levi\'s', price: '₹ 6,800', originalPrice: '₹ 8,999', rating: 4.9, reviews: '5k', image: '/images/hero/cat-jeans.png', isNew: true, matchPercentage: 96 },
-  { id: 'm4', name: 'Classic Pique Polo', brand: 'Lacoste', price: '₹ 3,900', originalPrice: '₹ 5,000', rating: 4.6, reviews: '3k', image: '/images/hero/cat-polos.png', isNew: false, matchPercentage: 91 },
-];
+const MENS_PRODUCTS = PRODUCTS.filter(p => p.category === 'mens').slice(0, 4);
 
-const WOMENS_PRODUCTS = [
-  { id: 'w1', name: 'Silk Button-Down', brand: 'Everlane', price: '₹ 4,200', originalPrice: '₹ 5,800', rating: 4.9, reviews: '4k', image: '/images/hero/cat-women-shirts.png', isNew: true, matchPercentage: 95 },
-  { id: 'w2', name: 'Wide Leg Trousers', brand: 'Cos', price: '₹ 5,500', originalPrice: '₹ 7,000', rating: 4.8, reviews: '2.5k', image: '/images/hero/cat-women-palazzos.png', isNew: true, matchPercentage: 92 },
-  { id: 'w3', name: 'High-Rise Straight', brand: 'Agolde', price: '₹ 12,000', originalPrice: '₹ 15,000', rating: 4.7, reviews: '1k', image: '/images/hero/cat-jeans.png', isNew: false, matchPercentage: 89 },
-  { id: 'w4', name: 'Ribbed Knit Polo', brand: 'Reformation', price: '₹ 6,200', originalPrice: '', rating: 4.6, reviews: '900', image: '/images/hero/cat-women-tops.png', isNew: true, matchPercentage: 93 },
-];
+const WOMENS_PRODUCTS = PRODUCTS.filter(p => p.category === 'womens').slice(0, 4);
 
 const ACCESSORIES_COLLECTIONS = [
   { name: 'Designer Bags', img: '/images/hero/luxury-accessories.png', href: '/collections/accessories', count: '22 Products' },
@@ -100,14 +93,7 @@ const CollectionGrid = ({ collections, dark = false }: { collections: any[], dar
 // ═══════════════════════════════════════════════════════════════
 
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
   const [heroSlide, setHeroSlide] = useState(0);
-
-  useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', h);
-    return () => window.removeEventListener('scroll', h);
-  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setHeroSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
@@ -121,26 +107,7 @@ export default function Home() {
 
 
 
-      {/* ══════ HEADER ══════ */}
-      <header className={`sticky top-0 z-[60] transition-all duration-300 flex items-center justify-between px-5 md:px-10 h-14 bg-white ${scrolled ? 'shadow-md border-b border-gray-100' : 'border-b border-gray-100'}`}>
-        <div className="flex items-center space-x-5">
-          <button className="p-1.5 hover:bg-gray-50 rounded-md lg:hidden"><Menu className="w-5 h-5" /></button>
-          <Link href="/" className="text-xl font-black tracking-tight">DRIP</Link>
-        </div>
-        <nav className="hidden lg:flex items-center space-x-7">
-          {['MEN', 'WOMEN', 'ACCESSORIES', 'AI STUDIO'].map((item) => (
-            <Link key={item} href={item === 'AI STUDIO' ? '/avatar-studio' : '/category'} className="text-[11px] font-bold tracking-[0.15em] text-gray-600 hover:text-black transition-colors">{item}</Link>
-          ))}
-        </nav>
-        <div className="flex items-center space-x-3">
-          <button className="p-2 hover:bg-gray-50 rounded-md hidden md:block"><Search className="w-[18px] h-[18px] text-gray-500" /></button>
-          <Link href="/profile" className="p-2 hover:bg-gray-50 rounded-md"><User className="w-[18px] h-[18px] text-gray-500" /></Link>
-          <Link href="/cart" className="relative p-2 hover:bg-gray-50 rounded-md">
-            <ShoppingBag className="w-[18px] h-[18px] text-gray-500" />
-            <span className="absolute top-0 right-0 w-4 h-4 bg-drip-coral text-white text-[8px] rounded-full flex items-center justify-center font-bold">2</span>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* ══════ HERO CAROUSEL ══════ */}
       <section className="relative w-full h-[calc(100vh-56px)] overflow-hidden bg-gray-900">
@@ -199,7 +166,7 @@ export default function Home() {
               category="MEN"
               title="URBAN UTILITY"
               desc="Technical fabrics and unapologetic street aesthetic. Designed for the relentless city dweller."
-              img="/images/hero/streetwear-jacket.png"
+              img="/images/hero/cat-men-jackets.png"
               href="/category?c=new-men"
             />
             <NewLaunchedContainer
@@ -355,72 +322,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════ FOOTER ══════ */}
-      <footer className="bg-white py-12 px-5 md:px-12 border-t border-[#EDE9E3]">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
-            
-            {/* Brand column */}
-            <div className="lg:col-span-4">
-              <Link href="/" className="text-2xl font-black tracking-tighter mb-4 block">DRIP</Link>
-              <p className="text-gray-500 text-[13px] font-medium leading-relaxed mb-6 max-w-xs">
-                The pinnacle of digital fashion and urban utility. Redefining style through AI and premium craftsmanship.
-              </p>
-              <div className="flex space-x-5">
-                {['Instagram', 'Twitter', 'TikTok'].map(s => (
-                  <Link key={s} href="#" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-all">{s}</Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Newsletter Column */}
-            <div className="lg:col-span-4">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 mb-4">Join The Collective</h4>
-              <p className="text-gray-500 text-[13px] font-medium mb-4">Early access. Exclusive drops. 100% Signal.</p>
-              <form className="relative flex items-center">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full bg-gray-50 border-b-2 border-gray-100 py-2 text-[13px] focus:outline-none focus:border-black transition-colors font-bold"
-                />
-                <button className="absolute right-0 text-[10px] font-black uppercase tracking-widest hover:text-drip-coral transition-all">Sign Up</button>
-              </form>
-            </div>
-
-            {/* Links columns */}
-            <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 mb-4">Menu</h4>
-                <ul className="space-y-2">
-                  {['Men', 'Women', 'Accessories'].map(link => (
-                    <li key={link}><Link href="#" className="text-gray-500 text-[13px] hover:text-black transition-colors font-semibold">{link}</Link></li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 mb-4">Support</h4>
-                <ul className="space-y-2">
-                  {['Shipping', 'Returns', 'Stores', 'Contact', 'About Us'].map(link => (
-                    <li key={link}><Link href={link === 'About Us' ? '/about' : '#'} className="text-gray-500 text-[13px] hover:text-black transition-colors font-semibold">{link}</Link></li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-          </div>
-
-          <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em]">
-              &copy; 2026 DRIP FASHION INC.
-            </p>
-            <div className="flex space-x-12">
-              {['Privacy', 'Terms', 'Cookies'].map(link => (
-                <Link key={link} href="#" className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em] hover:text-black transition-colors">{link}</Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* ══════ FLOATING AI ══════ */}
       <div className="fixed bottom-6 right-6 z-[70]">

@@ -2,67 +2,33 @@
 
 import { ChevronRight, Package, Heart, RefreshCcw, Bell, Settings, Ruler, Sparkles, MapPin, Coins, LogOut, ChevronLeft, User, MessageCircle, ShoppingBag, Menu, Search, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
-
-const NAV_LINKS = ['MEN', 'WOMEN', 'KIDS', 'BEAUTY', 'HOME & KITCHEN', 'ACCESSORIES'];
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const MENU_ITEMS = [
   { group: 'Shopping Overview', items: [
-    { id: 'orders', label: 'My Orders', desc: 'Track, return, or buy things again', icon: <Package className="w-5 h-5" />, href: '#' },
-    { id: 'wishlist', label: 'Wishlist & Drops', desc: 'View your saved styles', icon: <Heart className="w-5 h-5" />, href: '/profile/style-dna' },
-    { id: 'returns', label: 'Returns & Refunds', desc: 'Manage your active returns', icon: <RefreshCcw className="w-5 h-5" />, href: '#' },
-    { id: 'address', label: 'Saved Addresses', desc: 'Manage delivery addresses', icon: <MapPin className="w-5 h-5" />, href: '#' },
+    { id: 'orders', label: 'My Orders', desc: 'Track, return, or buy things again', icon: <Package className="w-5 h-5" />, href: '/profile/orders' },
+    { id: 'wishlist', label: 'Wishlist & Drops', desc: 'View your saved styles', icon: <Heart className="w-5 h-5" />, href: '/profile/wishlist' },
+    { id: 'returns', label: 'Returns & Refunds', desc: 'Manage your active returns', icon: <RefreshCcw className="w-5 h-5" />, href: '/profile/returns' },
+    { id: 'address', label: 'Saved Addresses', desc: 'Manage delivery addresses', icon: <MapPin className="w-5 h-5" />, href: '/profile/address' },
   ]},
   { group: 'Style & AI Insights', items: [
-    { id: 'locker', label: 'Size Locker', desc: 'Manage body measurements for AI Fit', icon: <Ruler className="w-5 h-5 text-drip-coral" />, href: '#' },
+    { id: 'locker', label: 'Size Locker', desc: 'Manage body measurements for AI Fit', icon: <Ruler className="w-5 h-5 text-drip-coral" />, href: '/profile/locker' },
     { id: 'style', label: 'Style DNA', desc: 'Edit your visual style preferences', icon: <Sparkles className="w-5 h-5 text-[#0055A4]" />, href: '/profile/style-dna' },
     { id: 'avatar', label: 'Avatar Studio', desc: 'Create your 3D digital double', icon: <User className="w-5 h-5 text-[#0055A4]" />, href: '/avatar-studio' },
     { id: 'shopper', label: 'AI Personal Shopper', desc: 'Chat with your dedicated AI stylist', icon: <MessageCircle className="w-5 h-5 text-drip-coral" />, href: '/shopper-ai' },
   ]},
   { group: 'Account Management', items: [
-    { id: 'coins', label: 'DRIP Coins', desc: 'Loyalty points balance: 240', icon: <Coins className="w-5 h-5 text-drip-gold" />, href: '#' },
-    { id: 'noti', label: 'Notifications', desc: 'Manage alerts & marketing', icon: <Bell className="w-5 h-5" />, href: '#' },
-    { id: 'account', label: 'Security Settings', desc: 'Passwords, privacy, devices', icon: <Settings className="w-5 h-5" />, href: '#' },
+    { id: 'coins', label: 'DRIP Coins', desc: 'Loyalty points balance: 240', icon: <Coins className="w-5 h-5 text-drip-gold" />, href: '/profile/coins' },
+    { id: 'noti', label: 'Notifications', desc: 'Manage alerts & marketing', icon: <Bell className="w-5 h-5" />, href: '/profile/notifications' },
+    { id: 'account', label: 'Security Settings', desc: 'Passwords, privacy, devices', icon: <Settings className="w-5 h-5" />, href: '/profile/security' },
   ]}
 ];
 
 export default function Profile() {
   return (
     <main className="min-h-screen bg-gray-50 pb-32">
-      {/* Consistent Luxury Header */}
-      <header className="sticky top-0 w-full h-20 bg-white z-50 border-b border-gray-200 shadow-sm flex items-center px-4 md:px-8">
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="p-1 hover:bg-gray-100 rounded-md transition-colors">
-             <ChevronLeft className="w-6 h-6 text-drip-dark" />
-          </Link>
-          <Link href="/" className="text-2xl font-display font-black tracking-widest text-black flex items-center">
-            DRIP
-          </Link>
-        </div>
-
-        <nav className="hidden lg:flex items-center space-x-8 ml-10 flex-1">
-          {NAV_LINKS.map(link => (
-            <button key={link} className="text-[12px] font-bold tracking-wide hover:text-[#0055A4] transition-colors">
-              {link}
-            </button>
-          ))}
-        </nav>
-
-        <div className="flex items-center space-x-6 text-xs font-medium text-drip-dark">
-          <div className="flex flex-col items-center text-[#0055A4]">
-            <User className="w-6 h-6 mb-1" />
-            Account
-          </div>
-          <Link href="/profile/style-dna" className="flex flex-col items-center hover:text-[#0055A4] transition-colors">
-            <Heart className="w-6 h-6 mb-1 text-gray-700" />
-            Wishlist
-          </Link>
-          <Link href="/cart" className="flex flex-col items-center hover:text-[#0055A4] transition-colors relative">
-            <ShoppingCart className="w-6 h-6 mb-1 text-gray-700" />
-            Cart
-            <span className="absolute -top-1 right-0 w-4 h-4 bg-drip-coral text-white text-[9px] rounded-full flex items-center justify-center font-bold">2</span>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pt-10">
         
@@ -122,6 +88,7 @@ export default function Profile() {
         </div>
 
       </div>
+      <Footer />
     </main>
   );
 }
