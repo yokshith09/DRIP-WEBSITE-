@@ -59,6 +59,9 @@ const NewLaunchedContainer = ({ title, desc, img, href, category }: { title: str
           <span className="inline-flex items-center space-x-2 text-drip-coral text-[10px] font-black uppercase tracking-[0.3em] bg-drip-coral/10 py-1.5 px-3 rounded-full border border-drip-coral/20">
             <Sparkles className="w-3 h-3" /> <span>Just Dropped</span>
           </span>
+          <span className="inline-flex items-center space-x-1.5 bg-drip-green/90 text-white text-[10px] font-black uppercase tracking-[0.3em] py-1.5 px-4 rounded-full shadow-lg">
+            <Sparkles className="w-3 h-3 fill-white animate-pulse" /> <span>Try-On Ready</span>
+          </span>
           {category && (
             <span className="bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] py-1.5 px-4 rounded-full shadow-lg">
               {category}
@@ -162,6 +165,9 @@ export default function Home() {
                 <div className="absolute bottom-0 w-full p-8 text-center translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                   <h3 className="text-white text-xl md:text-2xl font-black uppercase tracking-[0.1em]">{cat.name}</h3>
                 </div>
+                <div className="absolute top-4 right-4 bg-drip-green/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest z-10 shadow-sm">
+                  Interactive Try-On
+                </div>
               </Link>
             ))}
           </div>
@@ -204,8 +210,8 @@ export default function Home() {
             <div>
               <span className="inline-block text-drip-coral text-[10px] font-black uppercase tracking-[0.5em] mb-8 border border-drip-coral/30 px-5 py-2 rounded-full bg-drip-coral/5">Our Identity</span>
               <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9] mb-10">
-                VIRTUAL TRY-ON.<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">AI STYLIST.</span>
+                100% VIRTUAL TRY-ON.<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">AI COLOR MATCHING.</span>
               </h2>
               <div className="space-y-6 text-gray-400 font-medium leading-relaxed max-w-xl text-base md:text-lg">
                 <p>
@@ -329,10 +335,10 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/avatar-studio" className="bg-white text-black px-10 py-4 text-[12px] font-black uppercase tracking-[0.15em] hover:bg-drip-coral hover:text-white transition-all flex items-center justify-center space-x-2 rounded-full shadow-xl">
-              <Sparkles className="w-5 h-5" /><span>Try On Now</span>
+              <Sparkles className="w-5 h-5" /><span>Calibrate Digital Double</span>
             </Link>
-            <Link href="/shopper-ai" className="border-2 border-white/20 hover:border-white px-10 py-4 text-[12px] font-black uppercase tracking-[0.15em] transition-all rounded-full flex justify-center text-white/90 hover:text-white">
-              Talk to AI Stylist
+            <Link href="/avatar-studio" className="border-2 border-white/20 hover:border-white px-10 py-4 text-[12px] font-black uppercase tracking-[0.15em] transition-all rounded-full flex justify-center text-white/90 hover:text-white">
+              Upload Body Selfie
             </Link>
           </div>
         </div>
