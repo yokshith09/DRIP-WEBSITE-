@@ -1,13 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User } from 'lucide-react';
+import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User, Upload, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
+import { PRODUCTS } from '@/data/products';
+import { useCartStore } from '@/store/cart';
+
+const BASE_MODELS = [
+  {
+    id: 'male',
+    name: 'Male Model (Alex)',
+    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop'
+  },
+  {
+    id: 'female',
+    name: 'Female Model (Sophia)',
+    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&auto=format&fit=crop'
+  }
+];
 
 export default function AvatarStudio() {
   const [step, setStep] = useState<'INTRO' | 'SCANNING' | 'STUDIO'>('INTRO');
   const [progress, setProgress] = useState(0);
+  
+  // Custom Studio States
+  const [baseImage, setBaseImage] = useState<string>(BASE_MODELS[0].img);
+  const [fittedResult, setFittedResult] = useState<string | null>(null);
+  const [activeProduct, setActiveProduct] = useState<any>(null);
+  const [fittingStatus, setFittingStatus] = useState<'idle' | 'processing' | 'done' | 'error'>('idle');
+  const [fitError, setFitError] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<'all' | 'mens' | 'womens' | 'accessories'>('all');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addItem } = useCartStore();
+  const [cartAdded, setCartAdded] = useState(false);
 
   // Simulate scanning progress
   useEffect(() => {
@@ -21,76 +49,147 @@ export default function AvatarStudio() {
           }
           return p + 2;
         });
-      }, 50);
+      }, 30);
       return () => clearInterval(interval);
     }
   }, [step]);
 
+  // Handle local selfie upload as base model
+  const handleBaseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const options = {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, options);
+      const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+      setBaseImage(base64);
+      setFittedResult(null);
+      setActiveProduct(null);
+      setStep('STUDIO'); // Jump straight into Studio with the custom photo
+    } catch (err) {
+      console.error('Base image processing failed:', err);
+    }
+  };
+
+  // Run Real VTON draping process
+  const triggerFitting = async (product: any) => {
+    setActiveProduct(product);
+    setFittingStatus('processing');
+    setFitError(null);
+
+    try {
+      const res = await fetch('/api/try-on', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelImage: baseImage,
+          garmentImage: product.image,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to drape garment');
+      }
+
+      setFittedResult(data.resultUrl);
+      setFittingStatus('done');
+    } catch (err: any) {
+      console.error(err);
+      setFitError(err.message || 'GPU allocation timeout. Please try again.');
+      setFittingStatus('error');
+    }
+  };
+
+  const handleAddToBag = () => {
+    if (!activeProduct) return;
+    addItem({
+      id: `studio-${Date.now()}`,
+      brand: activeProduct.brand,
+      name: activeProduct.name,
+      price: parseInt(activeProduct.price.replace(/[^\d]/g, ''), 10) || 5999,
+      size: 'UK 9',
+      color: 'Default',
+      qty: 1,
+      image: fittedResult || activeProduct.image,
+      inStock: true
+    });
+    setCartAdded(true);
+    setTimeout(() => {
+      setCartAdded(false);
+    }, 3000);
+  };
+
+  // Filter products matching category
+  const filteredProducts = PRODUCTS.filter(p => {
+    if (filterCategory === 'all') return true;
+    return p.category === filterCategory;
+  });
+
   return (
     <main className="min-h-screen bg-drip-navy text-white overflow-hidden relative">
       {/* Header */}
-      <header className="absolute top-0 w-full z-40 p-4 pt-[safe-top] flex items-center justify-between">
+      <header className="absolute top-0 w-full z-40 p-4 pt-[safe-top] flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent">
         <Link href="/" className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"><ChevronLeft className="w-6 h-6 text-white" /></Link>
-        <span className="text-sm font-bold tracking-widest uppercase text-white/80">Avatar Engine Beta</span>
-        <button className="p-2 -mr-2"><Box className="w-5 h-5 text-white" /></button>
+        <span className="text-sm font-bold tracking-widest uppercase text-white/80">3D Trial Studio v2.0</span>
+        <button className="p-2 -mr-2" onClick={() => fileInputRef.current?.click()} title="Upload custom photo"><Upload className="w-5 h-5 text-white" /></button>
       </header>
 
       {step === 'INTRO' && (
         <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
-           <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 border border-white/20">
-             <ScanLine className="w-10 h-10 text-drip-coral" />
-           </div>
-           <h1 className="text-4xl md:text-5xl font-display leading-tight mb-4">Create Your <br/>Digital Double.</h1>
-           <p className="text-white/60 text-sm max-w-sm mb-8 leading-relaxed">
-             Using advanced spatial mapping, DRIP AI generates a centimeter-accurate 3D avatar. Try on clothes exactly how they would fit in real life.
-           </p>
+            <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 border border-white/20">
+              <ScanLine className="w-10 h-10 text-drip-coral animate-pulse" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-display leading-tight mb-4">Create Your <br/>Digital Double.</h1>
+            <p className="text-white/60 text-sm max-w-sm mb-8 leading-relaxed">
+              Using advanced spatial mapping, DRIP AI generates a centimeter-accurate 3D avatar. Try on clothes exactly how they would fit in real life.
+            </p>
 
-           {/* 2-Photo Requirement Flow */}
-           <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 text-left">
-              <h3 className="text-sm font-bold tracking-widest uppercase mb-4 text-white">Required Inputs</h3>
-              
-              <div className="flex items-center mb-4">
-                 <div className="w-10 h-10 rounded-full bg-black/40 border border-white/20 flex flex-col items-center justify-center mr-4">
-                    <User className="w-4 h-4 text-white/70" />
-                 </div>
-                 <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-white">1. Front-Facing Selfie</h4>
-                    <p className="text-[10px] text-white/50 uppercase tracking-widest">For facial mapping & skin tone</p>
-                 </div>
-              </div>
+            {/* Photo Selection Flow */}
+            <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 text-left">
+               <h3 className="text-sm font-bold tracking-widest uppercase mb-4 text-white">Choose Model Base</h3>
+               
+               <div className="grid grid-cols-2 gap-4">
+                 {BASE_MODELS.map(m => (
+                   <button
+                     key={m.id}
+                     onClick={() => {
+                       setBaseImage(m.img);
+                       setStep('SCANNING');
+                     }}
+                     className="relative aspect-[3/4] rounded-xl overflow-hidden border border-white/10 hover:border-drip-coral transition-colors bg-white/5 flex flex-col items-center justify-end p-3 text-center"
+                   >
+                     <Image src={m.img} alt={m.name} fill className="object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                     <span className="relative z-10 text-[10px] font-bold uppercase tracking-wider text-white bg-black/60 px-2 py-1 rounded w-full">{m.name.split(' ')[0]}</span>
+                   </button>
+                 ))}
+               </div>
+            </div>
 
-              <div className="flex items-center">
-                 <div className="w-10 h-10 rounded-full bg-black/40 border border-white/20 flex flex-col items-center justify-center mr-4">
-                    <Camera className="w-4 h-4 text-white/70" />
-                 </div>
-                 <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-white">2. Full-Body Image</h4>
-                    <p className="text-[10px] text-white/50 uppercase tracking-widest">In form-fitting clothes</p>
-                 </div>
-              </div>
-           </div>
-
-           <button 
-             onClick={() => setStep('SCANNING')}
-             className="w-full max-w-md bg-white text-drip-navy py-4 rounded-drip-btn font-bold tracking-widest uppercase hover:bg-gray-100 transition-colors flex justify-center items-center shadow-lg mb-4"
-           >
-             <Camera className="w-5 h-5 mr-3" />
-             Start Camera Flow
-           </button>
-           
-           <div className="max-w-xs text-[9px] text-white/40 uppercase tracking-wider leading-relaxed">
-              <p>PRIVACY GUARANTEED. Photos are securely processed on-the-fly and immediately deleted. We do not store your images.</p>
-           </div>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full max-w-md bg-white text-drip-navy py-4 rounded-drip-btn font-bold tracking-widest uppercase hover:bg-gray-100 transition-colors flex justify-center items-center shadow-lg mb-4"
+            >
+              <Camera className="w-5 h-5 mr-3" />
+              Upload Your Own Photo
+            </button>
+            
+            <div className="max-w-xs text-[9px] text-white/40 uppercase tracking-wider leading-relaxed">
+               <p>PRIVACY GUARANTEED. Photos are securely processed on-the-fly and immediately deleted. We do not store your images.</p>
+            </div>
         </div>
       )}
 
       {step === 'SCANNING' && (
         <div className="h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-          {/* Neural Network mapping visual effect */}
           <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #E94560 0%, transparent 50%)', backgroundSize: '200% 200%', backgroundPosition: 'center', animation: 'pulse 3s infinite' }}></div>
           
           <div className="relative w-48 h-64 mb-12">
-             {/* Mock body wireframe */}
              <div className="absolute inset-0 border-2 border-drip-coral/30 rounded-3xl z-0"></div>
              <div className="absolute bottom-0 w-full bg-drip-coral/20 backdrop-blur-sm z-10 transition-all duration-300 rounded-b-3xl" style={{ height: `${progress}%` }}>
                 <div className="absolute top-0 w-full h-[1px] bg-drip-coral shadow-[0_0_15px_#E94560]"></div>
@@ -115,62 +214,122 @@ export default function AvatarStudio() {
       )}
 
       {step === 'STUDIO' && (
-        <div className="h-screen flex flex-col md:flex-row relative">
+        <div className="h-screen flex flex-col md:flex-row relative pt-16">
           
-          {/* Main 3D Canvas Area (Mock) */}
-          <div className="flex-1 bg-gradient-to-b from-[#111] to-[#222] relative flex items-center justify-center w-full h-full">
+          {/* Main 3D Canvas Area */}
+          <div className="flex-1 bg-gradient-to-b from-[#0A0B10] to-[#121420] relative flex items-center justify-center w-full h-[calc(100vh-220px)] md:h-full">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             
-            {/* The Avatar Mock - represented by a silhouette or mannequin for now */}
-            <div className="w-56 h-[70vh] max-h-[600px] border border-white/5 bg-white/5 rounded-[3rem] relative shadow-[0_0_50px_rgba(255,255,255,0.05)] backdrop-blur-sm flex items-center justify-center group">
-               {/* Stand point */}
-               <div className="absolute bottom-[-20px] w-32 h-4 bg-white/20 rounded-full blur-md"></div>
-               
-               {/* Try On Visual */}
-               <div className="relative w-full h-full">
-                 <Image src="/images/jacket.png" alt="3D try on" fill className="object-cover mix-blend-screen opacity-90 drop-shadow-2xl z-20" />
-                 {/* Mannequin underlay */}
-                 <div className="absolute inset-4 bg-white/5 rounded-[2rem] z-10 filter blur-[2px]"></div>
-               </div>
+            {/* The Avatar Display */}
+            <div className="w-[85%] md:w-[75%] h-[80%] max-h-[580px] aspect-[3/4] border border-white/10 bg-white/5 rounded-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-sm overflow-hidden flex items-center justify-center">
+              
+               <Image 
+                 src={fittedResult && fittingStatus === 'done' ? fittedResult : baseImage} 
+                 alt="Fitting room model" 
+                 fill 
+                 className="object-cover" 
+               />
 
-               {/* Interaction hints */}
-               <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col space-y-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <div className="bg-black/80 backdrop-blur text-white p-2 rounded-full border border-white/20"><RefreshCw className="w-4 h-4" /></div>
+               {/* Fitting Room Loader */}
+               {fittingStatus === 'processing' && (
+                 <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6 z-30">
+                   <Loader2 className="w-8 h-8 text-drip-coral animate-spin mb-4" />
+                   <h4 className="text-sm font-bold uppercase tracking-widest text-white">Draping Outfit...</h4>
+                   <p className="text-[10px] text-white/50 font-mono mt-1">GPU server processing canvas</p>
+                 </div>
+               )}
+
+               {/* Fit Confidence Badge */}
+               {fittingStatus === 'done' && (
+                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-drip-green/90 backdrop-blur-md px-4 py-2 rounded-full border border-green-400 flex items-center shadow-[0_0_20px_rgba(0,255,0,0.2)] z-10 animate-fade-in-up">
+                    <CheckCircle2 className="w-4 h-4 text-white mr-2" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-white">98% Fit Match (Size M)</span>
+                 </div>
+               )}
+
+               {/* Change Base Button overlay */}
+               <div className="absolute bottom-6 right-6 z-10 flex space-x-2">
+                 <button 
+                   onClick={() => setStep('INTRO')}
+                   className="bg-black/60 backdrop-blur border border-white/10 p-2.5 rounded-full hover:bg-white/10 transition-colors"
+                   title="Switch base model"
+                 >
+                   <User className="w-4 h-4 text-white" />
+                 </button>
                </div>
             </div>
 
-            {/* Studio Tools overlay */}
-            <div className="absolute top-20 right-4 flex flex-col space-y-3 z-10">
-               <button className="bg-black/60 backdrop-blur border border-white/10 p-3 rounded-full hover:bg-white/10 transition-colors"><Box className="w-5 h-5 text-white" /></button>
-               <button className="bg-black/60 backdrop-blur border border-white/10 p-3 rounded-full hover:bg-white/10 transition-colors"><SlidersHorizontal className="w-5 h-5 text-white" /></button>
-            </div>
-            
-            {/* Fit Confidence Badge */}
-            <div className="absolute bottom-32 left-1/2 -translate-x-1/2 bg-drip-green/90 backdrop-blur-md px-4 py-2 rounded-full border border-green-400 flex items-center shadow-[0_0_20px_rgba(0,255,0,0.2)] z-10">
-               <CheckCircle2 className="w-4 h-4 text-white mr-2" />
-               <span className="text-xs font-bold uppercase tracking-wider text-white">98% Fit Match (Size M)</span>
-            </div>
+            {/* Actions for fitted items */}
+            {fittingStatus === 'done' && activeProduct && (
+              <div className="absolute bottom-8 left-8 right-8 md:left-1/2 md:right-auto md:-translate-x-1/2 z-20 max-w-sm w-full bg-black/85 backdrop-blur border border-white/10 p-4 rounded-2xl flex items-center justify-between shadow-2xl">
+                <div>
+                  <h4 className="text-xs font-bold text-white/60 uppercase">{activeProduct.brand}</h4>
+                  <p className="text-xs font-black truncate max-w-[150px]">{activeProduct.name}</p>
+                </div>
+                <button 
+                  onClick={handleAddToBag}
+                  className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center ${
+                    cartAdded ? 'bg-drip-green text-white' : 'bg-white text-black hover:bg-drip-coral hover:text-white'
+                  }`}
+                >
+                  {cartAdded ? 'Added!' : 'Add to Bag'}
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Wardrobe Selection Bottom Sheet (Mobile) / Sidebar (Desktop) */}
-          <div className="absolute bottom-0 w-full h-28 bg-black/90 backdrop-blur-xl border-t border-white/10 z-20 md:relative md:w-80 md:h-full md:border-l flex flex-col">
-            <div className="hidden md:block p-4 border-b border-white/10">
-               <h3 className="text-sm font-bold tracking-widest uppercase text-white/80">Your Wardrobe</h3>
+          {/* Wardrobe Selection Sidebar */}
+          <div className="w-full h-[220px] md:w-80 md:h-full bg-black/90 backdrop-blur-xl border-t md:border-t-0 md:border-l border-white/10 z-20 flex flex-col">
+            <div className="hidden md:flex p-4 border-b border-white/10 justify-between items-center">
+               <h3 className="text-sm font-bold tracking-widest uppercase text-white/80 flex items-center"><Sparkles className="w-4 h-4 mr-2 text-drip-coral" />Wardrobe</h3>
+               <span className="text-[10px] text-white/40">{filteredProducts.length} Items</span>
             </div>
-            <div className="flex-1 overflow-x-auto md:overflow-y-auto p-4 flex md:flex-col md:space-y-4 gap-4 md:gap-0 hide-scrollbar items-center md:items-stretch">
-               
-               {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className={`w-20 h-20 md:w-full md:h-auto bg-white/5 border ${item === 1 ? 'border-drip-coral' : 'border-white/10'} rounded-xl p-2 cursor-pointer hover:bg-white/10 transition-colors flex-shrink-0 flex items-center justify-center relative overflow-hidden group`}>
-                     <Image src={item % 2 === 0 ? '/images/sneakers.png' : '/images/jacket.png'} alt="item" fill className="object-cover mix-blend-screen opacity-80 group-hover:opacity-100 transition-opacity" />
-                     {item === 1 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-drip-coral rounded-full border border-black"></div>}
+            
+            {/* Category tabs */}
+            <div className="flex border-b border-white/10 text-[9px] font-bold uppercase tracking-widest overflow-x-auto hide-scrollbar shrink-0">
+              {['all', 'mens', 'womens', 'accessories'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat as any)}
+                  className={`flex-1 py-3 px-4 text-center border-b-2 whitespace-nowrap transition-all ${
+                    filterCategory === cat ? 'border-drip-coral text-white' : 'border-transparent text-white/40 hover:text-white'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Interactive Grid */}
+            <div className="flex-1 overflow-x-auto md:overflow-y-auto p-4 flex md:grid md:grid-cols-2 md:gap-4 md:space-y-0 gap-4 hide-scrollbar items-center md:items-start">
+               {filteredProducts.map((prod) => (
+                  <div 
+                    key={prod.id} 
+                    onClick={() => triggerFitting(prod)}
+                    className={`w-20 h-20 md:w-full md:h-28 bg-white/5 border ${
+                      activeProduct?.id === prod.id ? 'border-drip-coral ring-1 ring-drip-coral' : 'border-white/10'
+                    } rounded-xl p-2 cursor-pointer hover:bg-white/10 transition-all flex-shrink-0 flex items-center justify-center relative overflow-hidden group`}
+                  >
+                     <Image src={prod.image} alt={prod.name} fill className="object-cover mix-blend-screen opacity-80 group-hover:scale-105 transition-transform" />
+                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <span className="text-[8px] font-black uppercase tracking-wider text-white">Drape</span>
+                     </div>
                   </div>
                ))}
-               
             </div>
           </div>
 
         </div>
       )}
+
+      {/* Hidden file input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleBaseUpload} 
+        accept="image/*" 
+        className="hidden" 
+      />
     </main>
   );
 }
