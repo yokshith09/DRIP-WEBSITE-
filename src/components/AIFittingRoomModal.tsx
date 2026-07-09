@@ -162,99 +162,22 @@ export default function AIFittingRoomModal({
     }
   };
 
-  // Upgrades user to premium using secure Razorpay flow
   const handleUpgradeToPremium = async () => {
     setIsPayingPremium(true);
     setError(null);
 
     try {
-      console.log('[PREMIUM UPGRADE] Dispatching ₹199 order to create-order API...');
-      const response = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: 199, // ₹199 Premium Plan
-          receipt: `premium_upg_${Date.now()}`
-        })
-      });
-
-      const orderData = await response.json();
-
-      if (!response.ok) {
-        // Fallback simulation upgrade if credentials are not configured in local environment
-        if (orderData.error && (orderData.error.includes('credentials are not configured') || orderData.error.includes('API key'))) {
-          console.log('[PREMIUM UPGRADE] Razorpay credentials missing. Running simulated upgrade...');
-          await new Promise((resolve) => setTimeout(resolve, 2500));
-          
-          setIsPremium(true);
-          setPremiumSuccess(true);
-          localStorage.setItem('drip_is_premium', 'true');
-          setIsPayingPremium(false);
-          return;
-        }
-        throw new Error(orderData.error || 'Failed to establish Razorpay order.');
-      }
-
-      // Initialize Razorpay Payment Modal
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_StFVEQwQRejhNz',
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'DRIP AI Premium',
-        description: 'Styling Calipers & Unlimited Try-Ons Access',
-        order_id: orderData.order_id,
-        handler: async function (res: any) {
-          console.log('[PREMIUM UPGRADE] Verification handshake commited...');
-          setIsPayingPremium(true);
-          try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: res.razorpay_order_id,
-                razorpay_payment_id: res.razorpay_payment_id,
-                razorpay_signature: res.razorpay_signature
-              })
-            });
-
-            const verifyData = await verifyRes.json();
-
-            if (!verifyRes.ok || !verifyData.success) {
-              throw new Error(verifyData.error || 'Signature check failed.');
-            }
-
-            console.log('[PREMIUM UPGRADE] Premium Payment successfully verified!');
-            setIsPremium(true);
-            setPremiumSuccess(true);
-            localStorage.setItem('drip_is_premium', 'true');
-            setIsPayingPremium(false);
-          } catch (verifyErr: any) {
-            console.error('[PREMIUM UPGRADE] Verification failed:', verifyErr);
-            setError('Payment signature verification failed. Secure failure.');
-            setIsPayingPremium(false);
-          }
-        },
-        prefill: {
-          name: 'Yoo Jae-Suk',
-          email: 'shopper@drip.com',
-          contact: '+919876543210'
-        },
-        theme: {
-          color: '#1A1A2E'
-        },
-        modal: {
-          ondismiss: function () {
-            setIsPayingPremium(false);
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
+      console.log('[PREMIUM UPGRADE] Running in Portfolio Showcase Mode. Simulating upgrade processing...');
+      // 1.2 second simulated processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      
+      setIsPremium(true);
+      setPremiumSuccess(true);
+      localStorage.setItem('drip_is_premium', 'true');
+      setIsPayingPremium(false);
     } catch (err: any) {
-      console.error('[PREMIUM UPGRADE] Gateway connection failed:', err);
-      setError(err.message || 'Payment server failed to establish secure handshake.');
+      console.error('[PREMIUM UPGRADE] Upgrade failed:', err);
+      setError(err.message || 'Upgrade failed.');
       setIsPayingPremium(false);
     }
   };

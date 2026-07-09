@@ -134,7 +134,7 @@ export default function Cart() {
                  </Link>
 
                  <div className="mt-6 flex flex-col items-center text-center space-y-2">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Secure Checkout Powered by Razorpay</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Portfolio Showcase Mode (No Real Charges)</p>
                     <div className="flex space-x-3 opacity-20 grayscale">
                        <div className="w-8 h-4 bg-gray-400 rounded-sm"></div>
                        <div className="w-8 h-4 bg-gray-400 rounded-sm"></div>

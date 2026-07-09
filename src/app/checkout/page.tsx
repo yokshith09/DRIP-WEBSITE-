@@ -53,95 +53,16 @@ export default function Checkout() {
     setPaymentError(null);
 
     try {
-      console.log('[CHECKOUT] Calling create-order API route...');
-      const response = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: finalTotalPayable,
-          receipt: `rcpt_drip_${Date.now()}`
-        })
-      });
-
-      const orderData = await response.json();
-
-      if (!response.ok) {
-        // Safe fallback simulation if credentials are not configured in local environment
-        if (orderData.error && (orderData.error.includes('credentials are not configured') || orderData.error.includes('API key'))) {
-          console.log('[CHECKOUT] Razorpay credentials missing on server. Triggering backup simulation mode...');
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-          
-          setPaymentSuccess(true);
-          setIsProcessingPayment(false);
-          clearCart();
-          return;
-        }
-        throw new Error(orderData.error || 'Failed to initialize payment gateway.');
-      }
-
-      console.log('[CHECKOUT] Order created successfully. Opening Razorpay modal...', orderData);
-
-      // Open Official Razorpay Checkout Modal
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_StFVEQwQRejhNz', // fall back to your test key
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'DRIP AI Fitting Room',
-        description: `Securing receipt for ${totalItemCount} luxury items`,
-        order_id: orderData.order_id,
-        handler: async function (res: any) {
-          console.log('[CHECKOUT] Payment success callback triggered. dispatching signature verification...');
-          setIsProcessingPayment(true);
-          
-          try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: res.razorpay_order_id,
-                razorpay_payment_id: res.razorpay_payment_id,
-                razorpay_signature: res.razorpay_signature
-              })
-            });
-
-            const verifyData = await verifyRes.json();
-
-            if (!verifyRes.ok || !verifyData.success) {
-              throw new Error(verifyData.error || 'Cryptographic signature verification failed.');
-            }
-
-            console.log('[CHECKOUT] Payment successfully verified securely!');
-            setPaymentSuccess(true);
-            setIsProcessingPayment(false);
-            clearCart();
-          } catch (verifyErr: any) {
-            console.error('[CHECKOUT] Signature mismatch:', verifyErr);
-            setPaymentError(verifyErr.message || 'Transaction signature verification failed. Secure failure.');
-            setIsProcessingPayment(false);
-          }
-        },
-        prefill: {
-          name: 'Yoo Jae-Suk',
-          email: 'shopper@drip.com',
-          contact: '+919876543210'
-        },
-        theme: {
-          color: '#1A1A2E' // matching DRIP Navy
-        },
-        modal: {
-          ondismiss: function () {
-            console.log('[CHECKOUT] Razorpay payment window closed by user.');
-            setIsProcessingPayment(false);
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
+      console.log('[CHECKOUT] Running in Portfolio Showcase Mode. Simulating checkout processing...');
+      // 1.5 second high-end spinner delay to simulate transaction verification
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      setPaymentSuccess(true);
+      setIsProcessingPayment(false);
+      clearCart();
     } catch (err: any) {
       console.error('[CHECKOUT] Payment processing failed:', err);
-      setPaymentError(err.message || 'Failed to establish connection with secure payment channels.');
+      setPaymentError(err.message || 'Failed to establish connection.');
       setIsProcessingPayment(false);
     }
   };
@@ -213,15 +134,15 @@ export default function Checkout() {
             <Check className="w-8 h-8 animate-bounce" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-display font-bold text-black italic">Purchase Successful!</h2>
+            <h2 className="text-3xl font-display font-bold text-black italic">Showcase Order Placed!</h2>
             <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-              Thank you for shopping at DRIP. Your transaction is verified. An invoice receipt has been dispatched to your email.
+              This website is a **Portfolio Showcase**. Real payment transaction APIs and shipping logistics are disabled. Your simulated checkout has been processed successfully!
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-2xl text-left border border-gray-100 text-xs font-semibold text-gray-700 space-y-2 max-w-sm mx-auto">
-            <div className="flex justify-between"><span>Payment Mode</span><span className="font-bold text-black uppercase">UPI / Credit Card Test</span></div>
-            <div className="flex justify-between"><span>Logistics Speed</span><span className="font-bold text-drip-green uppercase">Express Air Cargo</span></div>
-            <div className="flex justify-between"><span>Order Status</span><span className="font-bold text-drip-coral uppercase">Dispatched</span></div>
+            <div className="flex justify-between"><span>Payment Mode</span><span className="font-bold text-drip-green uppercase">Demo Mode (No Charge)</span></div>
+            <div className="flex justify-between"><span>Showcase Status</span><span className="font-bold text-black uppercase">Portfolio Live</span></div>
+            <div className="flex justify-between"><span>Order Status</span><span className="font-bold text-drip-coral uppercase">Logged (Simulated)</span></div>
           </div>
           <button 
             onClick={() => router.push('/')}
