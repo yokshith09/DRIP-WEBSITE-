@@ -21,7 +21,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/store/cart';
 import { useStyleDNAStore } from '@/store/styleDNA';
-import { PRODUCTS } from '@/data/products';
+import { useProductStore } from '@/store/products';
 
 const COLOR_HEX_MAP: Record<string, string> = {
   white: '#FFFFFF',
@@ -67,8 +67,10 @@ export default function ProductDetail() {
   const params = useParams();
   const id = (params?.id as string) || 'm1';
   
+  const { products } = useProductStore();
+  
   // Find product from dataset
-  const product = PRODUCTS.find(p => p.id === id) || PRODUCTS[0];
+  const product = products.find(p => p.id === id) || products[0];
 
   const { addItem } = useCartStore();
   const { dna } = useStyleDNAStore();
@@ -136,7 +138,7 @@ export default function ProductDetail() {
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
 
   // Dynamic cross sells
-  const crossSells = PRODUCTS
+  const crossSells = products
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 5);
 

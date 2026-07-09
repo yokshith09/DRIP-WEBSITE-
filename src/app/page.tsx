@@ -8,7 +8,7 @@ import ProductCard from '../components/ProductCard';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AIFittingRoomModal from '../components/AIFittingRoomModal';
-import { PRODUCTS } from '../data/products';
+import { useProductStore } from '../store/products';
 
 // ═══════════════════════════════════════════════════════════════
 // DATA
@@ -16,25 +16,22 @@ import { PRODUCTS } from '../data/products';
 
 const HERO_SLIDES = [
   { id: 1, title: 'THE NEW ERA\nOF FITTING', sub: 'VIRTUAL DRAPING AND BODY MAPPING AT THE SPEED OF LIGHT', cta: 'ENTER ATELIER', img: '/images/hero/luxury_hero_vton_v2.png' },
-  { id: 2, title: 'ANATOMY OF\nTHE SILHOUETTE', sub: 'FINE WOOL COATS AND TAILORED SUITS CURATED FOR YOUR ANATOMY', cta: 'TRY ON THE EDIT', img: '/images/hero/luxury_hero_autumn.png' },
-  { id: 3, title: 'STYLE DNA\nFORMULATION', sub: 'CALIBRATE SIZING PROFILE & DISCOVER BESPOKE RESORTWEAR', cta: 'CALIBRATE SIZE', img: '/images/hero/luxury_hero_summer.png' },
+  { id: 2, title: 'ATELIER ANATOMY\nAND SUITING', sub: 'PREMIUM TAILORED SHIRTS AND SUITS CURATED FOR YOUR ANATOMY', cta: 'TRY ON THE EDIT', img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/TBH-SAPOL-CR_1.jpg?v=1768995505' },
+  { id: 3, title: 'STYLE DNA\nFORMULATION', sub: 'CALIBRATE SIZING PROFILE & DISCOVER BESPOKE RESORTWEAR', cta: 'CALIBRATE SIZE', img: 'https://cdn.shopify.com/s/files/1/0596/1164/3997/files/PurpleFloralJacquardShirt.jpg?v=1781256701' },
 ];
 
 const MAIN_COLLECTIONS = [
-  { name: "MEN'S COLLECTION", img: '/images/hero/mens-collection.png', href: '/collections/mens' },
-  { name: "WOMEN'S COLLECTION", img: '/images/hero/womens-collection.png', href: '/collections/womens' },
-  { name: 'ACCESSORIES', img: '/images/hero/accessories-collection.png', href: '/collections/accessories' },
+  { name: "SHIRTS & CASUAL TOPS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/TBH-CLUB-CR-1.webp?v=1780643129', href: '/collections/mens?sub=Shirts' },
+  { name: "JEANS & DENIMS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/DNM-SERENE-MB_1.webp?v=1781855065', href: '/collections/mens?sub=Jeans' },
+  { name: "CARGO PANTS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/CAR-EVERLYS-OL_1.webp?v=1781682098', href: '/collections/mens?sub=Pants' },
+  { name: "ACCESSORIES & WATCHES", img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/FEBRUARY/26/zsn4qxU9_f2557c67ad884b24a01b6110c0398d0c.jpg', href: '/collections/accessories' },
 ];
 
-const MENS_PRODUCTS = PRODUCTS.filter(p => p.category === 'mens').slice(0, 4);
-
-const WOMENS_PRODUCTS = PRODUCTS.filter(p => p.category === 'womens').slice(0, 4);
-
 const ACCESSORIES_COLLECTIONS = [
-  { name: 'Designer Bags', img: '/images/hero/luxury-accessories.png', href: '/collections/accessories', count: '22 Products' },
-  { name: 'Sunglasses', img: '/images/hero/cat-sunglasses.png', href: '/collections/accessories', count: '18 Products' },
-  { name: 'Hand Watches', img: '/images/hero/cat-watches.png', href: '/collections/accessories', count: '14 Products' },
-  { name: 'Caps', img: '/images/hero/accessories-collection.png', href: '/collections/accessories', count: '32 Products' },
+  { name: 'Chronograph Watches', img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/FEBRUARY/26/zsn4qxU9_f2557c67ad884b24a01b6110c0398d0c.jpg', href: '/collections/accessories', count: '14 Products' },
+  { name: 'Premium Belts', img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/17825602/2022/4/8/f0be4780-5a8d-4ea3-b6cd-106b1ed0aaad1649432036525CalvadossMenBlackBelts1.jpg', href: '/collections/accessories', count: '6 Products' },
+  { name: 'Sneakers Shoes', img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2026/MARCH/18/EB22bKlK_e84195a0622440c99ac393cc74763958.jpg', href: '/collections/mens?sub=Sneakers', count: '16 Products' },
+  { name: 'Utility Gear', img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2026/MARCH/17/hWzfSQPb_8aa80dd881104defa615b380ac66bf43.jpg', href: '/collections/accessories', count: '2 Products' },
 ];
 
 
@@ -94,8 +91,13 @@ const CollectionGrid = ({ collections, dark = false }: { collections: any[], dar
 // ═══════════════════════════════════════════════════════════════
 
 export default function Home() {
+  const { products } = useProductStore();
   const [heroSlide, setHeroSlide] = useState(0);
   const [tryOnProduct, setTryOnProduct] = useState<any>(null);
+
+  // Dynamic filter lists from store
+  const MENS_PRODUCTS = products.filter(p => p.category === 'mens' && p.subcategory !== 'Sneakers').slice(0, 4);
+  const SNEAKER_PRODUCTS = products.filter(p => p.subcategory === 'Sneakers').slice(0, 4);
 
   useEffect(() => {
     const t = setInterval(() => setHeroSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
@@ -109,8 +111,8 @@ export default function Home() {
     if (slideId === 3) {
       window.location.href = '/avatar-studio';
     } else {
-      // Open fitting room with a popular product
-      const defaultProduct = PRODUCTS.find(p => p.id === 'm1') || PRODUCTS[0];
+      // Open fitting room with a popular product (e.g. bh-buck-bk)
+      const defaultProduct = products.find(p => p.id === 'bh-buck-bk') || products[0];
       setTryOnProduct(defaultProduct);
     }
   };
@@ -250,15 +252,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════ WOMEN'S CATEGORY GRID ══════ */}
+      {/* ══════ TRENDING FOOTWEAR GRID ══════ */}
       <section className="py-20 md:py-28 bg-[#FAF9F7] border-t border-[#EDE9E3]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12">
-          <SectionHeading title="SHOP WOMEN'S" align="center" />
+          <SectionHeading title="TRENDING FOOTWEAR" align="center" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-            {WOMENS_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} />)}
+            {SNEAKER_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} />)}
           </div>
           <div className="mt-12 text-center">
-            <Link href="/collections/womens" className="inline-block bg-black text-white px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral transition-colors shadow-lg">View All Women's</Link>
+            <Link href="/collections/mens?sub=Sneakers" className="inline-block bg-black text-white px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral transition-colors shadow-lg">View All Footwear</Link>
           </div>
         </div>
       </section>

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User, Upload, Loader2, Sparkles, ShoppingBag, Link2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-import { PRODUCTS } from '@/data/products';
+import { useProductStore } from '@/store/products';
 import { useCartStore } from '@/store/cart';
 
 const BASE_MODELS = [
@@ -176,8 +176,9 @@ export default function AvatarStudio() {
     }
   };
 
+  const { products } = useProductStore();
   // Filter products matching category (combining native database items & imported items)
-  const allClosetProducts = [...PRODUCTS, ...importedProducts];
+  const allClosetProducts = [...products, ...importedProducts];
   const filteredProducts = allClosetProducts.filter(p => {
     if (filterCategory === 'all') return true;
     return p.category === filterCategory;

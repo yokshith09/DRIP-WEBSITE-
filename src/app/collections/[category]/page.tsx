@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, Star, Heart, SlidersHorizontal, ChevronRight, Scissors } from 'lucide-react';
-import { PRODUCTS } from '../../../data/products';
+import { useProductStore } from '../../../store/products';
 import { Product } from '../../../components/ProductCard';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -105,7 +105,8 @@ export default function CollectionPage() {
   if (category === 'men') category = 'mens';
   if (category === 'women') category = 'womens';
 
-  const allProducts: (Product & { subcategory?: string })[] = PRODUCTS.filter(
+  const { products } = useProductStore();
+  const allProducts: (Product & { subcategory?: string })[] = products.filter(
     (p) => p.category === category
   );
 

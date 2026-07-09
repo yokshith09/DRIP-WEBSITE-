@@ -22,6 +22,9 @@ const MENU_ITEMS = [
     { id: 'coins', label: 'DRIP Coins', desc: 'Loyalty points balance: 240', icon: <Coins className="w-5 h-5 text-drip-gold" />, href: '/profile/coins' },
     { id: 'noti', label: 'Notifications', desc: 'Manage alerts & marketing', icon: <Bell className="w-5 h-5" />, href: '/profile/notifications' },
     { id: 'account', label: 'Security Settings', desc: 'Passwords, privacy, devices', icon: <Settings className="w-5 h-5" />, href: '/profile/security' },
+  ]},
+  { group: 'Atelier Administrator Controls', items: [
+    { id: 'admin', label: 'Database Admin Dashboard', desc: 'List or delete catalog products', icon: <Settings className="w-5 h-5 text-[#7A0C16]" />, href: '/admin' }
   ]}
 ];
 
