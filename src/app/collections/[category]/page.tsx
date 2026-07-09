@@ -99,7 +99,11 @@ function ProductCard({ product }: { product: Product & { subcategory?: string } 
 export default function CollectionPage() {
   const params = useParams();
   const categoryParam = (params?.category as string) ?? 'mens';
-  const category = categoryParam.toLowerCase();
+  let category = categoryParam.toLowerCase();
+  
+  // Normalize singular/plural routing parameters
+  if (category === 'men') category = 'mens';
+  if (category === 'women') category = 'womens';
 
   const allProducts: (Product & { subcategory?: string })[] = PRODUCTS.filter(
     (p) => p.category === category

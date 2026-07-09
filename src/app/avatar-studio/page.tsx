@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User, Upload, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
+import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User, Upload, Loader2, Sparkles, ShoppingBag, Link2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { PRODUCTS } from '@/data/products';
 import { useCartStore } from '@/store/cart';
@@ -31,8 +31,14 @@ export default function AvatarStudio() {
   const [activeProduct, setActiveProduct] = useState<any>(null);
   const [fittingStatus, setFittingStatus] = useState<'idle' | 'processing' | 'done' | 'error'>('idle');
   const [fitError, setFitError] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<'all' | 'mens' | 'womens' | 'accessories'>('all');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'mens' | 'womens' | 'accessories' | 'imports'>('all');
   
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+  const [importedProducts, setImportedProducts] = useState<any[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addItem } = useCartStore();
   const [cartAdded, setCartAdded] = useState(false);
@@ -125,8 +131,54 @@ export default function AvatarStudio() {
     }, 3000);
   };
 
-  // Filter products matching category
-  const filteredProducts = PRODUCTS.filter(p => {
+  const handleImportProduct = async () => {
+    if (!importUrl) {
+      setImportError('Please enter a valid product page URL.');
+      return;
+    }
+
+    setImporting(true);
+    setImportError('');
+
+    try {
+      const res = await fetch('/api/import-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: importUrl }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to scan product page');
+      }
+
+      // Add category parameter to match custom filtering
+      const customProduct = {
+        ...data.product,
+        category: 'imports',
+        rating: '4.8',
+        reviews: '1',
+        matchPercentage: 96,
+      };
+
+      setImportedProducts((prev) => [customProduct, ...prev]);
+      setActiveProduct(customProduct); // Automatically select the item
+      setShowImportModal(false);
+      setImportUrl('');
+      
+      // Auto-trigger draping for the newly imported custom item
+      triggerFitting(customProduct);
+    } catch (err: any) {
+      console.error(err);
+      setImportError(err.message || 'Verification failed. Target site might be blocked by Cloudflare.');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  // Filter products matching category (combining native database items & imported items)
+  const allClosetProducts = [...PRODUCTS, ...importedProducts];
+  const filteredProducts = allClosetProducts.filter(p => {
     if (filterCategory === 'all') return true;
     return p.category === filterCategory;
   });
@@ -141,7 +193,7 @@ export default function AvatarStudio() {
       </header>
 
       {step === 'INTRO' && (
-        <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen flex flex-col items-center justify-start pt-28 pb-12 p-6 text-center">
             <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 border border-white/20">
               <ScanLine className="w-10 h-10 text-drip-coral animate-pulse" />
             </div>
@@ -287,7 +339,7 @@ export default function AvatarStudio() {
             
             {/* Category tabs */}
             <div className="flex border-b border-white/10 text-[9px] font-bold uppercase tracking-widest overflow-x-auto hide-scrollbar shrink-0">
-              {['all', 'mens', 'womens', 'accessories'].map(cat => (
+              {['all', 'mens', 'womens', 'accessories', 'imports'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => setFilterCategory(cat as any)}
@@ -295,13 +347,22 @@ export default function AvatarStudio() {
                     filterCategory === cat ? 'border-drip-coral text-white' : 'border-transparent text-white/40 hover:text-white'
                   }`}
                 >
-                  {cat}
+                  {cat === 'imports' ? 'Custom Imports' : cat}
                 </button>
               ))}
             </div>
 
             {/* Interactive Grid */}
             <div className="flex-1 overflow-x-auto md:overflow-y-auto p-4 flex md:grid md:grid-cols-2 md:gap-4 md:space-y-0 gap-4 hide-scrollbar items-center md:items-start">
+               {(filterCategory === 'imports' || filterCategory === 'all') && (
+                  <div 
+                    onClick={() => setShowImportModal(true)}
+                    className="w-20 h-20 md:w-full md:h-28 bg-white/5 border border-dashed border-white/20 rounded-xl p-2 cursor-pointer hover:bg-white/10 hover:border-white/40 transition-all flex-shrink-0 flex flex-col items-center justify-center text-center text-white/50 hover:text-white"
+                  >
+                     <Link2 className="w-5 h-5 mb-1.5 text-drip-coral animate-pulse" />
+                     <span className="text-[8px] font-black uppercase tracking-wider">Import URL</span>
+                  </div>
+               )}
                {filteredProducts.map((prod) => (
                   <div 
                     key={prod.id} 
@@ -330,6 +391,64 @@ export default function AvatarStudio() {
         accept="image/*" 
         className="hidden" 
       />
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div className="bg-drip-navy border border-white/15 p-6 rounded-3xl max-w-md w-full shadow-2xl relative text-left">
+            <button 
+              onClick={() => {
+                setShowImportModal(false);
+                setImportUrl('');
+                setImportError('');
+              }}
+              className="absolute top-4 right-4 text-white/50 hover:text-white text-sm"
+            >
+              ✕
+            </button>
+            <h3 className="text-base font-black uppercase tracking-wider text-white mb-2 flex items-center">
+              <Link2 className="w-5 h-5 mr-2 text-drip-coral" />
+              <span>Import Garment URL</span>
+            </h3>
+            <p className="text-xs text-white/60 leading-relaxed mb-6 font-medium">
+              Paste the product page link from any brand (Zara, H&M, Nike, etc.). We will scrape the main garment image and load it directly into your try-on closet!
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  placeholder="https://www.zara.com/us/en/linen-shirt-p07545300.html"
+                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-drip-coral transition-colors text-xs font-semibold"
+                />
+              </div>
+              
+              {importError && (
+                <p className="text-[10px] text-red-400 font-bold tracking-wide uppercase">
+                  ⚠ {importError}
+                </p>
+              )}
+
+              <button
+                disabled={importing}
+                onClick={handleImportProduct}
+                className="w-full bg-white text-black hover:bg-drip-coral hover:text-white transition-all py-3.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center space-x-2"
+              >
+                {importing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Scanning Page...</span>
+                  </>
+                ) : (
+                  <span>Extract Garment</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

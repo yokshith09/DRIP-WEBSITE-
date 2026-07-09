@@ -11,6 +11,8 @@
   --color-drip-muted: #6B6B7B;
   --color-drip-green: #1DB954;
   --color-drip-orange: #FF6B35;
+  --color-drip-maroon: #7A0C16;
+  --color-drip-cream: #FAF4EE;
 
   --font-display: var(--font-playfair), serif;
   --font-sans: var(--font-inter), sans-serif;

@@ -15,7 +15,7 @@ import { PRODUCTS } from '../data/products';
 // ═══════════════════════════════════════════════════════════════
 
 const HERO_SLIDES = [
-  { id: 1, title: 'THE NEW ERA\nOF FITTING', sub: 'VIRTUAL DRAPING AND BODY MAPPING AT THE SPEED OF LIGHT', cta: 'ENTER ATELIER', img: '/images/hero/luxury_hero_vton.png' },
+  { id: 1, title: 'THE NEW ERA\nOF FITTING', sub: 'VIRTUAL DRAPING AND BODY MAPPING AT THE SPEED OF LIGHT', cta: 'ENTER ATELIER', img: '/images/hero/luxury_hero_vton_v2.png' },
   { id: 2, title: 'ANATOMY OF\nTHE SILHOUETTE', sub: 'FINE WOOL COATS AND TAILORED SUITS CURATED FOR YOUR ANATOMY', cta: 'TRY ON THE EDIT', img: '/images/hero/luxury_hero_autumn.png' },
   { id: 3, title: 'STYLE DNA\nFORMULATION', sub: 'CALIBRATE SIZING PROFILE & DISCOVER BESPOKE RESORTWEAR', cta: 'CALIBRATE SIZE', img: '/images/hero/luxury_hero_summer.png' },
 ];
@@ -58,9 +58,6 @@ const NewLaunchedContainer = ({ title, desc, img, href, category }: { title: str
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className="inline-flex items-center space-x-2 text-drip-coral text-[10px] font-black uppercase tracking-[0.3em] bg-drip-coral/10 py-1.5 px-3 rounded-full border border-drip-coral/20">
             <Sparkles className="w-3 h-3" /> <span>Just Dropped</span>
-          </span>
-          <span className="inline-flex items-center space-x-1.5 bg-drip-green/90 text-white text-[10px] font-black uppercase tracking-[0.3em] py-1.5 px-4 rounded-full shadow-lg">
-            <Sparkles className="w-3 h-3 fill-white animate-pulse" /> <span>Try-On Ready</span>
           </span>
           {category && (
             <span className="bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] py-1.5 px-4 rounded-full shadow-lg">
@@ -165,7 +162,7 @@ export default function Home() {
                 <div className="absolute bottom-0 w-full p-8 text-center translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                   <h3 className="text-white text-xl md:text-2xl font-black uppercase tracking-[0.1em]">{cat.name}</h3>
                 </div>
-                <div className="absolute top-4 right-4 bg-drip-green/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest z-10 shadow-sm">
+                <div className="absolute top-4 right-4 bg-black/65 backdrop-blur-md text-white border border-white/15 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest z-10 shadow-sm">
                   Interactive Try-On
                 </div>
               </Link>
@@ -215,10 +212,10 @@ export default function Home() {
               </h2>
               <div className="space-y-6 text-gray-400 font-medium leading-relaxed max-w-xl text-base md:text-lg">
                 <p>
-                  DRIP is a premier virtual try-on service provider. We do not manufacture clothing. Instead, we curate the absolute best fashion collections from around the web and bring them into a seamless digital fitting experience.
+                  DRIP is a premier contemporary fast-fashion brand. We design and manufacture high-fidelity modern apparel, engineered around premium cuts, clean lines, and responsive fabrics.
                 </p>
                 <p>
-                  Experience the future of fashion discovery with our AI-based outfit suggestions and DNA-based color matching systems, designed to help you find your perfect look without ever leaving home.
+                  Experience the future of fashion shopping with our built-in virtual fitting room, allowing you to drape any look over your silhouette and match colors to your style DNA instantly.
                 </p>
               </div>
             </div>
@@ -282,12 +279,12 @@ export default function Home() {
           <span className="inline-block text-gray-400 text-[10px] font-black uppercase tracking-[0.5em] mb-6 border border-gray-200 px-4 py-1.5 rounded-full">About The Brand</span>
 
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter mb-8 text-gray-900 leading-[0.9]">
-            WE DON'T MANUFACTURE.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">WE INNOVATE.</span>
+            WE DESIGN FOR DRIP.<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">WE MANUFACTURE FIT.</span>
           </h2>
 
           <p className="text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto mb-20 text-sm md:text-[15px]">
-            We are a dedicated virtual try-on service provider. We do not manufacture any of the collections shown here. We partner with the best online brands to provide you with an immersive, AI-powered digital fitting room experience.
+            We build and catalog our own collections with precise 3D structural data. Every piece is modeled to coordinate perfectly and drape realistically in your personal virtual fitting room.
           </p>
 
           {/* 3 Pillars Grid */}
@@ -317,6 +314,37 @@ export default function Home() {
               <p className="text-[11px] text-gray-500 leading-relaxed max-w-[200px]">Your photos, data, and DNA styling profiles are protected with enterprise-grade security.</p>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+
+
+
+      {/* ══════ FLASH SALE BANNER ══════ */}
+      <section className="max-w-[1440px] mx-auto px-4 md:px-12 py-12">
+        <div className="relative w-full aspect-[16/9] md:aspect-[3.2/1] rounded-[2rem] overflow-hidden bg-drip-maroon flex flex-col md:flex-row items-center shadow-xl border border-white/5">
+          {/* Left Side: Bold Text details */}
+          <div className="w-full md:w-[35%] p-8 md:p-14 flex flex-col justify-center text-left z-10 select-none">
+            <span className="text-drip-cream text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] mb-4 block opacity-85">7 PM - 12 AM</span>
+            <h2 className="text-drip-cream text-5xl md:text-7xl lg:text-[85px] font-black uppercase tracking-tighter leading-[0.8] font-sans">
+              FLASH
+            </h2>
+            <h2 className="text-drip-cream text-5xl md:text-7xl lg:text-[85px] font-black uppercase tracking-tighter leading-[0.8] font-sans mt-1">
+              SALE
+            </h2>
+          </div>
+
+          {/* Right Side: Image with translucent gradient overlay */}
+          <div className="w-full md:w-[65%] h-full relative self-stretch min-h-[240px] md:min-h-0">
+            <Image 
+              src="/images/hero/luxury_hero_vton_v2.png" 
+              alt="Flash Sale Model" 
+              fill 
+              className="object-cover object-top" 
+            />
+            {/* Smooth transition from solid maroon to transparent */}
+            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-drip-maroon via-drip-maroon/75 to-transparent"></div>
           </div>
         </div>
       </section>

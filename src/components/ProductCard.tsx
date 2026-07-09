@@ -27,13 +27,13 @@ export default function ProductCard({ product, onTryOn }: { product: Product; on
           <Image src={product.image} alt={product.name} fill className="object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-500" />
         </Link>
         
-        {/* Wishlist Button */}
+        {/* Wishlist Button (Top-Right) */}
         <button 
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-300 hover:text-drip-coral z-20 transition-colors" 
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-gray-400 hover:text-drip-coral z-30 transition-colors" 
           aria-label="Add to wishlist"
         >
           <Heart className="w-4 h-4" />
@@ -80,7 +80,7 @@ export default function ProductCard({ product, onTryOn }: { product: Product; on
       </Link>
 
       {/* AI Fit Hint Overlay */}
-      <div className="absolute top-2 right-2 z-20 pointer-events-none">
+      <div className="absolute top-3 right-14 z-20 pointer-events-none">
         <div className="bg-drip-green/90 backdrop-blur-sm text-white px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest shadow-sm">
           {product.matchPercentage || 92}% Match
         </div>

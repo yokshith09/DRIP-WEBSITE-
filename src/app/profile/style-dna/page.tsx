@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ChevronLeft, Sparkles, SlidersHorizontal, Share2, ArrowRight, UserCheck, ShieldAlert, Award } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -20,6 +21,22 @@ const StyleDNAOnboarding = dynamic(() => import('@/components/StyleDNAOnboarding
 
 export default function StyleDNAPage() {
   const { dna, resetDNA } = useStyleDNAStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen bg-drip-white flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center">
+          <div className="w-10 h-10 border-2 border-drip-navy/20 border-t-drip-navy rounded-full animate-spin mb-4"></div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Loading Blueprint...</span>
+        </div>
+      </main>
+    );
+  }
 
   // If onboarding is not completed, display the scanning wizard
   if (!dna.completedOnboarding) {

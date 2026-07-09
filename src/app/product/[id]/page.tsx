@@ -165,7 +165,7 @@ export default function ProductDetail() {
       <div className="max-w-[1440px] mx-auto px-4 md:px-12 pt-8 flex flex-col lg:flex-row gap-12">
         
         {/* Gallery Section */}
-        <div className="flex-grow max-w-[700px] mx-auto w-full">
+        <div className="flex-grow max-w-[700px] mx-auto w-full lg:sticky lg:top-28 h-fit">
            <div className="flex flex-col gap-6">
               {images.map((img, i) => (
                 <div key={i} className="relative aspect-[3/4] max-h-[650px] bg-gray-50 overflow-hidden rounded-2xl border border-gray-100 shadow-xs">
@@ -293,51 +293,60 @@ export default function ProductDetail() {
                 </button>
               </div>
 
-              {/* Product Info List */}
-              <div className="mt-12 space-y-6">
-                 <div className="flex items-center space-x-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                    <Truck className="w-6 h-6 text-gray-400" />
-                    <div>
-                       <h5 className="text-[10px] font-bold text-black uppercase tracking-widest">Free Express Shipping</h5>
-                       <p className="text-[10px] text-gray-400 font-medium">Delivered within 48 hours for Elite Members.</p>
-                    </div>
-                 </div>
-                 <div className="flex items-center space-x-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                    <ShieldCheck className="w-6 h-6 text-gray-400" />
-                    <div>
-                       <h5 className="text-[10px] font-bold text-black uppercase tracking-widest">DRIP Authenticity Shield</h5>
-                       <p className="text-[10px] text-gray-400 font-medium">Authenticity certificate included with every purchase.</p>
-                    </div>
-                 </div>
-                 
-                 {/* Fabric Details & 3D Viewer Mock */}
-                 <div className="p-5 border border-gray-100 rounded-xl bg-gray-50/50">
-                    <h5 className="text-[10px] font-black text-black uppercase tracking-widest mb-3 flex items-center space-x-2">
-                      <Box className="w-4 h-4" /> <span>Materials & Construction</span>
-                    </h5>
-                    <ul className="text-xs text-gray-500 font-medium space-y-2 mb-4 leading-relaxed">
-                       <li>• Material: {product.material || 'Premium Fabrics'}</li>
-                       <li>• Fit Type: {product.fit || 'Regular fit'}</li>
-                       <li>• Curated Tags: {product.tags?.join(', ') || 'Premium curation'}</li>
-                       <li>• Double needle stitching for long-lasting durability</li>
-                       <li>• Premium dust bag and special packaging included</li>
-                    </ul>
-                    <button className="w-full py-3 bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:border-black transition-colors flex items-center justify-center space-x-2 shadow-sm rounded-xl">
-                       <Eye className="w-4 h-4 text-drip-coral" />
-                       <span>Open 3D Fabric Viewer</span>
-                    </button>
-                 </div>
+            </div>
+         </div>
+      </div>
 
-                 {/* FAQs for SEO/AI Context */}
-                 <div className="p-5 border border-gray-100 rounded-xl bg-white">
-                    <h5 className="text-[10px] font-black text-black uppercase tracking-widest mb-4">Product FAQs</h5>
-                    <div className="text-xs text-gray-500 font-medium space-y-4">
-                       <p><strong className="text-black block mb-1 text-[10px] uppercase tracking-wider">How does the sizing run?</strong>This brand runs true to size. If you are in between sizes, consult your Style DNA recommendation.</p>
-                       <p><strong className="text-black block mb-1 text-[10px] uppercase tracking-wider">How do I care for this garment?</strong>We recommend washing in cold water with similar colors and hanging to dry. Dry clean optional.</p>
-                    </div>
-                 </div>
+      {/* Remaining Info Section (Full-width below the split) */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-12 mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-100 pt-16 font-sans">
+        {/* Materials & Construction */}
+        <div className="p-6 border border-gray-100 rounded-2xl bg-gray-50/50">
+           <h5 className="text-[11px] font-black text-black uppercase tracking-widest mb-4 flex items-center space-x-2">
+             <Box className="w-4 h-4 text-drip-coral" /> <span>Materials & Details</span>
+           </h5>
+           <ul className="text-xs text-gray-500 font-medium space-y-2.5 leading-relaxed">
+              <li>• Material: {product.material || 'Premium Fabrics'}</li>
+              <li>• Fit Type: {product.fit || 'Regular fit'}</li>
+              <li>• Curated Tags: {product.tags?.join(', ') || 'Premium curation'}</li>
+              <li>• Double needle stitching for long-lasting durability</li>
+              <li>• Premium dust bag and special packaging included</li>
+           </ul>
+           <button className="w-full mt-6 py-3 bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:border-black transition-colors flex items-center justify-center space-x-2 shadow-sm rounded-xl">
+              <Eye className="w-4 h-4 text-drip-coral" />
+              <span>Open 3D Fabric Viewer</span>
+           </button>
+        </div>
+
+        {/* Delivery & Authentication */}
+        <div className="space-y-6">
+           <div className="flex items-start space-x-4 p-5 border border-gray-100 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+              <Truck className="w-6 h-6 text-drip-coral shrink-0 mt-0.5" />
+              <div>
+                 <h5 className="text-[11px] font-bold text-black uppercase tracking-widest mb-1">Free Express Shipping</h5>
+                 <p className="text-[10px] text-gray-400 font-medium leading-relaxed">Delivered within 48 hours for Elite Members. Standard shipping 3-5 business days.</p>
               </div>
+           </div>
+           <div className="flex items-start space-x-4 p-5 border border-gray-100 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+              <ShieldCheck className="w-6 h-6 text-drip-coral shrink-0 mt-0.5" />
+              <div>
+                 <h5 className="text-[11px] font-bold text-black uppercase tracking-widest mb-1">Authenticity Shield</h5>
+                 <p className="text-[10px] text-gray-400 font-medium leading-relaxed">Authenticity certificate included with every purchase. Checked by in-house fashion curators.</p>
+              </div>
+           </div>
+        </div>
 
+        {/* FAQs */}
+        <div className="p-6 border border-gray-100 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+           <h5 className="text-[11px] font-black text-black uppercase tracking-widest mb-4">Product FAQs</h5>
+           <div className="text-xs text-gray-500 font-medium space-y-4">
+              <div>
+                 <strong className="text-black block mb-1 text-[10px] uppercase tracking-wider font-bold">How does the sizing run?</strong>
+                 <p className="leading-relaxed">This brand runs true to size. If you are in between sizes, consult your Style DNA recommendation.</p>
+              </div>
+              <div>
+                 <strong className="text-black block mb-1 text-[10px] uppercase tracking-wider font-bold">How do I care for this garment?</strong>
+                 <p className="leading-relaxed">We recommend washing in cold water with similar colors and hanging to dry. Dry clean optional.</p>
+              </div>
            </div>
         </div>
       </div>
