@@ -97,6 +97,7 @@ export default function Home() {
 
   // Dynamic filter lists from store
   const MENS_PRODUCTS = products.filter(p => p.category === 'mens' && p.subcategory !== 'Sneakers').slice(0, 4);
+  const WOMENS_PRODUCTS = products.filter(p => p.category === 'womens').slice(0, 4);
   const SNEAKER_PRODUCTS = products.filter(p => p.subcategory === 'Sneakers').slice(0, 4);
 
   useEffect(() => {
@@ -252,8 +253,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════ TRENDING FOOTWEAR GRID ══════ */}
+      {/* ══════ WOMEN'S CATEGORY GRID ══════ */}
       <section className="py-20 md:py-28 bg-[#FAF9F7] border-t border-[#EDE9E3]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12">
+          <SectionHeading title="SHOP WOMEN'S" align="center" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+            {WOMENS_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} />)}
+          </div>
+          <div className="mt-12 text-center">
+            <Link href="/collections/womens" className="inline-block bg-black text-white px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral transition-colors shadow-lg">View All Women's</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════ TRENDING FOOTWEAR GRID ══════ */}
+      <section className="py-20 md:py-28 bg-white border-t border-[#EDE9E3]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12">
           <SectionHeading title="TRENDING FOOTWEAR" align="center" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
