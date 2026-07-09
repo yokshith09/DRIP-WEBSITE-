@@ -21,10 +21,9 @@ const HERO_SLIDES = [
 ];
 
 const MAIN_COLLECTIONS = [
-  { name: "SHIRTS & CASUAL TOPS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/TBH-CLUB-CR-1.webp?v=1780643129', href: '/collections/mens?sub=Shirts' },
-  { name: "JEANS & DENIMS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/DNM-SERENE-MB_1.webp?v=1781855065', href: '/collections/mens?sub=Jeans' },
-  { name: "CARGO PANTS", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/CAR-EVERLYS-OL_1.webp?v=1781682098', href: '/collections/mens?sub=Pants' },
-  { name: "ACCESSORIES & WATCHES", img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/FEBRUARY/26/zsn4qxU9_f2557c67ad884b24a01b6110c0398d0c.jpg', href: '/collections/accessories' },
+  { name: "MEN'S COLLECTION", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/TBH-SAPOL-CR_1.jpg?v=1768995505', href: '/collections/mens' },
+  { name: "WOMEN'S COLLECTION", img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop', href: '/collections/womens' },
+  { name: "ACCESSORIES", img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/FEBRUARY/26/zsn4qxU9_f2557c67ad884b24a01b6110c0398d0c.jpg', href: '/collections/accessories' },
 ];
 
 const ACCESSORIES_COLLECTIONS = [
@@ -266,18 +265,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════ TRENDING FOOTWEAR GRID ══════ */}
-      <section className="py-20 md:py-28 bg-white border-t border-[#EDE9E3]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12">
-          <SectionHeading title="TRENDING FOOTWEAR" align="center" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-            {SNEAKER_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} />)}
-          </div>
-          <div className="mt-12 text-center">
-            <Link href="/collections/mens?sub=Sneakers" className="inline-block bg-black text-white px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral transition-colors shadow-lg">View All Footwear</Link>
-          </div>
-        </div>
-      </section>
+
 
       {/* ══════ ACCESSORIES CATEGORY GRID ══════ */}
       <section className="py-16 md:py-24 bg-gray-950 text-white border-t border-gray-900">
