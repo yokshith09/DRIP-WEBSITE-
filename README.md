@@ -24,7 +24,8 @@ DRIP is a premium, contemporary fast-fashion e-commerce platform featuring an in
 To protect user data and prevent malicious abuse (e.g., API credit draining), DRIP enforces a strict security perimeter:
 * **Session Middleware**: Global Next.js middleware (`src/middleware.ts`) utilizing `@supabase/ssr` to securely parse HTTP-only cookies, intercepting unauthenticated traffic.
 * **API Route Protection**: Backend routes (like `/api/try-on`) enforce server-side session validation. Requests without a valid login context are immediately rejected with `401 Unauthorized`.
-* **Rate-Limited Email/Password Auth**: Resolves Supabase's free-tier OTP limits (3/hour) by falling back to standard password registration (`src/app/login/page.tsx`), supplemented with UI-level artificial delays to thwart basic timing and brute-force attacks.
+* **Role-Based Access Control (RBAC)**: The `/admin` dashboard strictly requires the authenticated user email to be `admin@drip.com`. Unauthorized users are immediately kicked back to the homepage.
+* **Rate-Limited Email/Password & OTP Auth**: Resolves Supabase's free-tier OTP limits by supporting standard password registration alongside Magic Links (`src/app/login/page.tsx`), supplemented with UI-level artificial delays to thwart basic timing and brute-force attacks.
 * **Generic Error Handling**: Auth flows intentionally return generic errors (e.g., "Invalid login credentials") to prevent malicious email enumeration.
 
 ---
@@ -56,7 +57,14 @@ To protect user data and prevent malicious abuse (e.g., API credit draining), DR
 * **Component Path**: [`src/components/StyleDNAOnboarding.tsx`](file:///e:/New%20folder/drip-app/src/components/StyleDNAOnboarding.tsx)
 * **Description**: A multi-step styling scanner wizard. Captures shoulder/hip dimensions via digital tailor calipers, scans skin undertones, style vibes (minimalist, streetwear, classic, bohemian), and budget bounds. Generates a blueprint card and filters the catalog for personalized matches using `src/lib/productMatcher.ts`.
 
-### 4. Product buys Section
+### 4. Admin Curation Dashboard (CRUD)
+* **Path**: [`src/app/admin/page.tsx`](file:///e:/New%20folder/drip-app/src/app/admin/page.tsx)
+* **Description**: A fully functional, interactive catalog management system restricted to administrators.
+  * **Interactive Metrics**: Top-level stat blocks act as instant category filters for the data table.
+  * **Dynamic Store State**: Leverages Zustand (`src/store/products.ts`) with `localStorage` persistence for client-side state manipulation.
+  * **Edit/Delete Actions**: Inline catalog editing allows admins to update product names, prices, categories, and images, persisting changes globally.
+
+### 5. Product buys Section
 * **Path**: [`src/app/product/[id]/page.tsx`](file:///e:/New%20folder/drip-app/src/app/product/%5Bid%5D/page.tsx)
 * **Description**: The e-commerce details page. Employs a scrolling-free design:
   * **Buy Column**: Contains price, brand, colors, sizes, AI styling advice, and checkout actions (fixed on screen).
