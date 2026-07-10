@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { runTryOnWithFallback } from '@/lib/tryon';
+import { createClient } from '@/lib/supabase/server';
 
 // Helper to convert local relative path to base64 for cloud providers
 function getLocalImageAsBase64(relativeUrl: string): string | null {
@@ -28,6 +29,18 @@ function getLocalImageAsBase64(relativeUrl: string): string | null {
 
 export async function POST(req: Request) {
   try {
+    // 1. Enforce strict server-side API Route Protection
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.warn('[SECURITY] Blocked unauthorized Try-On API request. No valid session found.');
+      return NextResponse.json(
+        { error: 'Unauthorized. You must be securely logged in to use the AI Virtual Try-On.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     
     // Support both 'personImage' (new) and 'modelImage' (old) variable keys

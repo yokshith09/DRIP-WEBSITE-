@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Loader2, Lock, Mail, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -10,26 +10,81 @@ export default function Login() {
   const router = useRouter();
   const supabase = createClient();
   
-  const [step, setStep] = useState<'EMAIL' | 'OTP'>('EMAIL');
+  // LOGIN WIZARD STEPS
+  const [step, setStep] = useState<'CREDENTIALS' | 'OTP'>('CREDENTIALS');
+  
+  // FORM STATES
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']); // 6-digit OTP from Supabase
+  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); 
+  const [isRegistering, setIsRegistering] = useState(false);
+  
+  // UI STATES
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const handleSendOtp = async () => {
+  // 1. STANDARD PASSWORD LOGIN
+  const handlePasswordAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    
     setIsLoading(true);
     setError(null);
+    
+    // SECURITY: Artificial delay to mitigate timing attacks / simple brute forcing
+    await new Promise(res => setTimeout(res, 800));
+
+    try {
+      if (isRegistering) {
+        // Handle Signup
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        setSuccessMsg('Account created successfully! Logging you in...');
+        
+        // Auto sign in after registration
+        await supabase.auth.signInWithPassword({ email, password });
+        router.push('/');
+        router.refresh();
+      } else {
+        // Handle Login
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        
+        router.push('/');
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error('[AUTH ERROR]', err);
+      // SECURITY: Generic error message (OWASP Best Practice)
+      setError('Invalid login credentials or account does not exist.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. FALLBACK OTP LOGIN
+  const handleSendOtp = async () => {
+    if (!email) return;
+    setIsLoading(true);
+    setError(null);
+    
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: {
-          shouldCreateUser: true,
-        }
+        options: { shouldCreateUser: true }
       });
       if (error) throw error;
       setStep('OTP');
     } catch (err: any) {
-      setError(err.message || 'Failed to send OTP.');
+      console.error('[OTP ERROR]', err);
+      setError('Failed to process request. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -49,9 +104,9 @@ export default function Login() {
       if (error) throw error;
       
       router.push('/');
-      router.refresh(); // Refresh layout to grab new session
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || 'Invalid verification code.');
+      setError('Invalid verification code.');
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +118,6 @@ export default function Login() {
     newOtp[index] = value;
     setOtp(newOtp);
     
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
@@ -78,51 +132,97 @@ export default function Login() {
       </header>
 
       <div className="hero-container !px-6 md:max-w-md mx-auto w-full pt-14 pb-20">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h1 className="text-4xl font-display font-medium text-drip-dark tracking-wide">DRIP</h1>
-          <p className="text-sm font-medium text-drip-muted uppercase tracking-widest mt-2">Wear Your World</p>
+          <p className="text-[10px] font-bold text-drip-muted uppercase tracking-[0.3em] mt-2">Secure Authentication</p>
         </div>
 
-        {step === 'EMAIL' ? (
+        {step === 'CREDENTIALS' ? (
           <div className="space-y-6">
-            <h2 className="text-2xl font-display text-drip-dark mb-4">Welcome Back</h2>
             <div>
-              <label className="block text-xs font-semibold text-drip-muted uppercase tracking-wider mb-2">Email Address</label>
-              <div className="flex bg-white rounded-drip-input border border-drip-grey overflow-hidden focus-within:border-drip-navy transition-colors">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-4 text-base focus:outline-none"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
+              <h2 className="text-2xl font-display text-drip-dark mb-1">
+                {isRegistering ? 'Create Account' : 'Welcome Back'}
+              </h2>
+              <p className="text-xs text-gray-500">
+                {isRegistering ? 'Register to access the Virtual Try-On and save styles.' : 'Sign in to access your secure Vault.'}
+              </p>
+            </div>
+
+            <form onSubmit={handlePasswordAuth} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-drip-muted uppercase tracking-wider mb-2">Email Address</label>
+                <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden focus-within:border-black transition-colors px-4 py-3.5 items-center">
+                  <Mail className="w-4 h-4 text-gray-400 mr-3" />
+                  <input 
+                    type="email" 
+                    placeholder="name@example.com"
+                    className="w-full text-sm focus:outline-none"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-drip-muted uppercase tracking-wider mb-2">Password</label>
+                <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden focus-within:border-black transition-colors px-4 py-3.5 items-center">
+                  <Lock className="w-4 h-4 text-gray-400 mr-3" />
+                  <input 
+                    type="password" 
+                    placeholder="••••••••"
+                    className="w-full text-sm focus:outline-none"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-xs font-medium flex items-center space-x-2">
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              {successMsg && (
+                <div className="bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl text-xs font-medium">
+                  {successMsg}
+                </div>
+              )}
+
+              <button 
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-4 rounded-xl font-bold tracking-widest uppercase text-xs flex justify-center items-center transition-all bg-black text-white hover:bg-drip-coral shadow-md disabled:opacity-50 mt-2"
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{isRegistering ? 'Register Securely' : 'Sign In Securely'} <ArrowRight className="w-3.5 h-3.5 ml-2" /></>}
+              </button>
+            </form>
+
+            <div className="flex items-center justify-between text-xs font-semibold px-1">
+              <button 
+                type="button" 
+                onClick={() => setIsRegistering(!isRegistering)}
+                className="text-drip-muted hover:text-black transition-colors"
+              >
+                {isRegistering ? 'Already have an account?' : 'Need an account?'}
+              </button>
+              <button 
+                type="button" 
+                onClick={handleSendOtp}
+                disabled={!email || isLoading}
+                className={`transition-colors ${email ? 'text-drip-coral hover:text-black' : 'text-gray-300 cursor-not-allowed'}`}
+              >
+                Login via OTP
+              </button>
             </div>
-
-            {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-
-            <button 
-              onClick={handleSendOtp}
-              disabled={!email.includes('@') || isLoading}
-              className={`w-full py-4 rounded-drip-btn font-semibold tracking-widest uppercase flex justify-center items-center transition-opacity ${email.includes('@') ? 'bg-drip-navy text-white hover:bg-opacity-90' : 'bg-drip-grey text-drip-muted cursor-not-allowed'}`}
-            >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Get OTP <ArrowRight className="w-4 h-4 ml-2" /></>}
-            </button>
-
-            <div className="relative flex items-center py-6">
-              <div className="flex-grow border-t border-drip-grey"></div>
-              <span className="shrink-0 px-4 text-xs font-semibold text-drip-muted uppercase tracking-wider">Or continue securely</span>
-              <div className="flex-grow border-t border-drip-grey"></div>
-            </div>
-
-            <p className="text-center text-xs text-drip-muted">
-              By using Email authentication, we secure your Style DNA and Cart directly to your secure Supabase Vault.
-            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-display text-drip-dark mb-2">Verify OTP</h2>
-            <p className="text-sm text-drip-muted mb-6">Enter the 6-digit code sent to {email} <button onClick={() => setStep('EMAIL')} className="text-drip-coral underline ml-1">Edit</button></p>
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <h2 className="text-2xl font-display text-drip-dark mb-2">Verify Security OTP</h2>
+            <p className="text-sm text-drip-muted mb-6">Enter the 6-digit code sent to {email} <button onClick={() => setStep('CREDENTIALS')} className="text-drip-coral font-bold underline ml-1">Go Back</button></p>
             
             <div className="grid grid-cols-6 gap-2">
               {otp.map((digit, idx) => (
@@ -133,7 +233,7 @@ export default function Login() {
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
-                  className="w-full h-12 text-center text-lg font-bold bg-white rounded-xl border border-drip-grey focus:outline-none focus:border-drip-navy"
+                  className="w-full h-12 text-center text-lg font-bold bg-white rounded-xl border border-gray-200 focus:outline-none focus:border-black"
                 />
               ))}
             </div>
@@ -143,17 +243,13 @@ export default function Login() {
             <button 
               onClick={handleVerifyOtp}
               disabled={otp.join('').length < 6 || isLoading}
-              className="w-full bg-drip-navy text-white py-4 rounded-drip-btn font-semibold tracking-widest uppercase mt-4 hover:bg-opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center"
+              className="w-full bg-black text-white py-4 rounded-xl font-bold tracking-widest uppercase text-xs mt-4 hover:bg-drip-coral transition-all disabled:opacity-50 flex justify-center items-center shadow-md"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Login'}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Login'}
             </button>
-            <p onClick={handleSendOtp} className="text-center text-sm font-semibold text-drip-muted underline mt-4 cursor-pointer hover:text-drip-dark">Resend OTP</p>
           </div>
         )}
       </div>
-
-      <p className="absolute bottom-6 w-full text-center text-[10px] text-drip-muted uppercase tracking-wider">By continuing, you agree to our Terms & Privacy Policy.</p>
     </main>
   );
 }
-

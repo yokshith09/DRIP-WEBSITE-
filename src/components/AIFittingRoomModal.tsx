@@ -22,7 +22,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
+import { createClient } from '@/lib/supabase/client';
 import { useTryOnStore } from '@/store/tryOn';
 import { useCartStore } from '@/store/cart';
 import { useProductStore } from '@/store/products';
@@ -67,6 +69,9 @@ export default function AIFittingRoomModal({
 
   const { products } = useProductStore();
   const { addItem } = useCartStore();
+  
+  const router = useRouter();
+  const supabase = createClient();
   
   const fileInputFaceRef = useRef<HTMLInputElement>(null);
 
@@ -228,6 +233,13 @@ export default function AIFittingRoomModal({
   // Run AI Draping API trigger
   const triggerVirtualFitting = async () => {
     if (!userPhoto) return;
+
+    // SECURITY: Enforce Authentication Before Proceeding
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push('/login?redirect=tryon');
+      return;
+    }
 
     setStatus('processing');
     setWizardStep('PROCESSING');
