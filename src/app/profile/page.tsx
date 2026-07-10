@@ -134,7 +134,7 @@ export default function Profile() {
         </div>
 
         <div className="max-w-4xl mx-auto flex flex-col gap-10">
-          {MENU_ITEMS.map((group, idx) => (
+          {MENU_ITEMS.filter(group => group.group !== 'Atelier Administrator Controls' || user?.email === 'admin@drip.com').map((group, idx) => (
             <div key={idx}>
               <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6 pl-2">{group.group}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
