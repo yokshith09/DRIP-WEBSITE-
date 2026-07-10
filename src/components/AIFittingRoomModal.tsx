@@ -237,7 +237,8 @@ export default function AIFittingRoomModal({
     // SECURITY: Enforce Authentication Before Proceeding
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      router.push('/login?redirect=tryon');
+      onClose();
+      router.push('/login?redirect=avatar-studio');
       return;
     }
 

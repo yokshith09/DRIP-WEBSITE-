@@ -47,7 +47,15 @@ export default function Login() {
         
         // Auto sign in after registration
         await supabase.auth.signInWithPassword({ email, password });
-        router.push('/');
+        
+        const params = new URLSearchParams(window.location.search);
+        const redirectPath = params.get('redirect');
+        
+        if (redirectPath) {
+          router.push(`/${redirectPath}`);
+        } else {
+          router.push('/');
+        }
         router.refresh();
       } else {
         // Handle Login
@@ -57,7 +65,14 @@ export default function Login() {
         });
         if (error) throw error;
         
-        router.push('/');
+        const params = new URLSearchParams(window.location.search);
+        const redirectPath = params.get('redirect');
+        
+        if (redirectPath) {
+          router.push(`/${redirectPath}`);
+        } else {
+          router.push('/');
+        }
         router.refresh();
       }
     } catch (err: any) {
@@ -103,7 +118,14 @@ export default function Login() {
       
       if (error) throw error;
       
-      router.push('/');
+      const params = new URLSearchParams(window.location.search);
+      const redirectPath = params.get('redirect');
+      
+      if (redirectPath) {
+        router.push(`/${redirectPath}`);
+      } else {
+        router.push('/');
+      }
       router.refresh();
     } catch (err: any) {
       setError('Invalid verification code.');
