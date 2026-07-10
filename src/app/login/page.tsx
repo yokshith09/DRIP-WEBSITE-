@@ -38,11 +38,16 @@ export default function Login() {
     try {
       if (isRegistering) {
         // Handle Signup
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+        
+        if (!data.session) {
+           throw new Error("Registration succeeded, but Supabase blocked login because 'Confirm Email' is still turned ON in your Supabase Dashboard. Please turn it off.");
+        }
+
         setSuccessMsg('Account created successfully! Logging you in...');
         
         // Auto sign in after registration
@@ -77,8 +82,13 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error('[AUTH ERROR]', err);
-      // SECURITY: Generic error message (OWASP Best Practice)
-      setError('Invalid login credentials or account does not exist.');
+      if (isRegistering) {
+        // Show real errors during registration so users know what to fix
+        setError(err.message || 'Registration failed. Please try again.');
+      } else {
+        // SECURITY: Generic error message (OWASP Best Practice) for logins
+        setError('Invalid login credentials or account does not exist.');
+      }
     } finally {
       setIsLoading(false);
     }
