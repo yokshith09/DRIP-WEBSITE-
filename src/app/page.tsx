@@ -21,8 +21,8 @@ const HERO_SLIDES = [
 ];
 
 const MAIN_COLLECTIONS = [
-  { name: "MEN'S COLLECTION", img: '/mens_cover.png', href: '/collections/mens' },
-  { name: "WOMEN'S COLLECTION", img: '/womens_cover.png', href: '/collections/womens' },
+  { name: "MEN'S COLLECTION", img: 'https://cdn.shopify.com/s/files/1/0517/2939/9964/files/SWE-PEXO-GR_1.jpg?v=1770992487', href: '/collections/mens' },
+  { name: "WOMEN'S COLLECTION", img: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?q=80&w=600&auto=format&fit=crop', href: '/collections/womens' },
   { name: "ACCESSORIES", img: 'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/FEBRUARY/26/zsn4qxU9_f2557c67ad884b24a01b6110c0398d0c.jpg', href: '/collections/accessories' },
 ];
 
