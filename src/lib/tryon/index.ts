@@ -29,11 +29,12 @@ export async function runTryOnWithFallback(
   
   if (!hasAnyKeys && !forceProvider) {
     console.log('[TryOn] No API keys configured. Running in high-fidelity simulation mode...');
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+    // Delay for 16 seconds to allow frontend loading messages to cycle and simulate GPU processing
+    await new Promise((resolve) => setTimeout(resolve, 16000));
     return {
       resultUrl: garmentImage, // Return the garment image itself to simulate
       provider: 'simulation-fallback',
-      durationMs: 4000,
+      durationMs: 16000,
       fallbackUsed: false
     };
   }
