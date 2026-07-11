@@ -164,9 +164,16 @@ export default function Home() {
                 <div className="absolute bottom-0 w-full p-8 text-center translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                   <h3 className="text-white text-xl md:text-2xl font-black uppercase tracking-[0.1em]">{cat.name}</h3>
                 </div>
-                <div className="absolute top-4 right-4 bg-black/65 backdrop-blur-md text-white border border-white/15 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest z-10 shadow-sm">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTryOnOpen(true);
+                  }}
+                  className="absolute top-4 right-4 bg-black/65 backdrop-blur-md text-white border border-white/15 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest z-10 shadow-sm hover:bg-drip-coral hover:border-drip-coral transition-colors"
+                >
                   Interactive Try-On
-                </div>
+                </button>
               </Link>
             ))}
           </div>

@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Camera, RefreshCw, Box, ScanLine, X, ChevronLeft, SlidersHorizontal, CheckCircle2, User, Upload, Loader2, Sparkles, ShoppingBag, Link2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { useProductStore } from '@/store/products';
 import { useCartStore } from '@/store/cart';
 
@@ -22,6 +24,8 @@ const BASE_MODELS = [
 ];
 
 export default function AvatarStudio() {
+  const router = useRouter();
+  const supabase = createClient();
   const [step, setStep] = useState<'INTRO' | 'SCANNING' | 'STUDIO'>('INTRO');
   const [progress, setProgress] = useState(0);
   
@@ -85,6 +89,14 @@ export default function AvatarStudio() {
   // Run Real VTON draping process
   const triggerFitting = async (product: any) => {
     setActiveProduct(product);
+    
+    // Check auth
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push('/login?redirect=avatar-studio');
+      return;
+    }
+
     setFittingStatus('processing');
     setFitError(null);
 
