@@ -29,12 +29,13 @@ export async function runTryOnWithFallback(
   
   if (!hasAnyKeys && !forceProvider) {
     console.log('[TryOn] No API keys configured. Running in high-fidelity simulation mode...');
-    // Delay for 16 seconds to allow frontend loading messages to cycle and simulate GPU processing
-    await new Promise((resolve) => setTimeout(resolve, 16000));
+    // Delay for 4 seconds to simulate processing
+    await new Promise((resolve) => setTimeout(resolve, 4000));
     return {
-      resultUrl: personImage, // Return the user's photo instead of the garment
+      // Return garment image as result (not person image) so user sees the outfit
+      resultUrl: garmentImage,
       provider: 'simulation-fallback',
-      durationMs: 16000,
+      durationMs: 4000,
       fallbackUsed: false
     };
   }
@@ -60,7 +61,7 @@ export async function runTryOnWithFallback(
         provider === 'replicate'   ? await runReplicate(personImage, garmentImage) :
         provider === 'huggingface' ? await runHuggingFace(personImage, garmentImage) :
         provider === 'kling'       ? await runKling(personImage, garmentImage, garmentType) :
-                                     { resultUrl: personImage, provider: 'simulation-fallback', durationMs: 2000 }; // fallback block
+                                     { resultUrl: garmentImage, provider: 'simulation-fallback', durationMs: 2000 };
 
       console.log(`[TryOn] ✓ ${provider} succeeded in ${result.durationMs}ms`);
       return { ...result, fallbackUsed: attempts > 1 };
@@ -73,8 +74,9 @@ export async function runTryOnWithFallback(
 
   // If all failed, fall back to simulation rather than crashing the page
   console.error('[TryOn] All configured API providers failed. Triggering backup simulation fallback...');
+  console.error('[TryOn] Last error was:', lastError?.message);
   return {
-    resultUrl: personImage,
+    resultUrl: garmentImage,
     provider: 'simulation-fallback (API Fail Recovery)',
     durationMs: 1500,
     fallbackUsed: true

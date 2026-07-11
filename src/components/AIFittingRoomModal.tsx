@@ -75,9 +75,8 @@ export default function AIFittingRoomModal({
   
   const fileInputFaceRef = useRef<HTMLInputElement>(null);
 
-  // Wizard Steps: GENDER -> GARMENT -> USER_PHOTO -> PROCESSING -> DONE
-  const [wizardStep, setWizardStep] = useState<'GENDER' | 'GARMENT' | 'USER_PHOTO' | 'PROCESSING' | 'DONE'>('GENDER');
-  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(null);
+  // Wizard Steps: USER_PHOTO -> GARMENT -> PROCESSING -> DONE
+  const [wizardStep, setWizardStep] = useState<'USER_PHOTO' | 'GARMENT' | 'PROCESSING' | 'DONE'>('USER_PHOTO');
   
   // Selected garment for try-on (can be current product, a catalog product, or an imported product)
   const [selectedGarment, setSelectedGarment] = useState<{
@@ -123,8 +122,7 @@ export default function AIFittingRoomModal({
   // Reset states on open
   useEffect(() => {
     if (isOpen) {
-      setWizardStep('GENDER');
-      setSelectedGender(null);
+      setWizardStep('USER_PHOTO');
       setSelectedGarment({
         id: 'current',
         image: productImage,
@@ -345,14 +343,7 @@ export default function AIFittingRoomModal({
         {/* Left Side: Visualizer Display Screen */}
         <div className="relative w-full md:w-[420px] h-64 md:h-full bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 border-r border-gray-100">
           
-          {/* GENDER Step Visual */}
-          {wizardStep === 'GENDER' && (
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-950 flex flex-col items-center justify-center p-8 text-center text-white space-y-4">
-              <UserIcon className="w-16 h-16 text-drip-coral opacity-40 animate-pulse" />
-              <h3 className="text-xl font-display font-medium italic">Fit Calibration</h3>
-              <p className="text-xs text-gray-400 max-w-[280px]">Select your target gender shape to calibrate structural clothing drapery mapping.</p>
-            </div>
-          )}
+
 
           {/* GARMENT Step Visual */}
           {wizardStep === 'GARMENT' && (
@@ -552,46 +543,13 @@ export default function AIFittingRoomModal({
             /* ========================================= */
             <div className="flex flex-col justify-between h-full text-left">
               
-              {/* STEP 1: GENDER SELECTION */}
-              {wizardStep === 'GENDER' && (
-                <div className="space-y-6 pt-4 animate-in fade-in duration-300">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-black tracking-widest uppercase text-drip-coral">Step 1 of 3</span>
-                    <h2 className="text-xl font-display font-medium text-black">Select Gender Profile</h2>
-                    <p className="text-xs text-gray-500">We use this selection to calibrate the AI skeletal model boundaries for drape fit optimization.</p>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                    <button 
-                      type="button"
-                      onClick={() => { setSelectedGender('male'); setWizardStep('USER_PHOTO'); }}
-                      className="border border-gray-200 hover:border-black p-8 rounded-2xl flex flex-col items-center justify-center space-y-3 transition-all hover:shadow-md group bg-gray-50/50"
-                    >
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 group-hover:bg-black group-hover:text-white transition-colors">
-                        <UserIcon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs font-black uppercase tracking-wider">Male Profile</span>
-                    </button>
-
-                    <button 
-                      type="button"
-                      onClick={() => { setSelectedGender('female'); setWizardStep('USER_PHOTO'); }}
-                      className="border border-gray-200 hover:border-black p-8 rounded-2xl flex flex-col items-center justify-center space-y-3 transition-all hover:shadow-md group bg-gray-50/50"
-                    >
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 group-hover:bg-black group-hover:text-white transition-colors">
-                        <UserIcon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs font-black uppercase tracking-wider">Female Profile</span>
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* STEP 2: GARMENT SELECTION */}
               {wizardStep === 'GARMENT' && (
                 <div className="space-y-4 pt-2 animate-in fade-in duration-300 flex-1 flex flex-col">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-black tracking-widest uppercase text-drip-coral">Step 3 of 3</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase text-drip-coral">Step 2 of 2</span>
                     <h2 className="text-xl font-display font-medium text-black">Select Outfit to Try On</h2>
                   </div>
 
@@ -745,7 +703,7 @@ export default function AIFittingRoomModal({
               {wizardStep === 'USER_PHOTO' && (
                 <div className="space-y-5 pt-4 animate-in fade-in duration-300 flex-1 flex flex-col justify-between">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-black tracking-widest uppercase text-drip-coral">Step 2 of 3</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase text-drip-coral">Step 1 of 2</span>
                     <h2 className="text-xl font-display font-medium text-black">Upload Silhouette</h2>
                   </div>
 
@@ -797,7 +755,7 @@ export default function AIFittingRoomModal({
                   <div className="flex space-x-3 pt-4 border-t border-gray-100 mt-auto">
                     <button 
                       type="button"
-                      onClick={() => setWizardStep('GENDER')}
+                      onClick={onClose}
                       className="px-4 py-3 border border-gray-200 hover:bg-gray-50 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center space-x-1"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> <span>Back</span>
@@ -926,8 +884,7 @@ export default function AIFittingRoomModal({
                       <button 
                         type="button"
                         onClick={() => {
-                          setWizardStep('GENDER');
-                          setSelectedGender(null);
+                          setWizardStep('USER_PHOTO');
                           setUserPhoto(null);
                           reset();
                         }}

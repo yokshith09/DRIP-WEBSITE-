@@ -43,7 +43,9 @@ export async function runReplicate(
   };
 }
 
-// ─── PROVIDER 2: HuggingFace (FALLBACK) ──────────────────
+// ─── PROVIDER 2: HuggingFace via Gradio Client ──────────
+// BUG FIX: yisol/IDM-VTON is a Gradio Space, NOT an Inference API model.
+// Must use @gradio/client to talk to it, not raw fetch to api-inference.huggingface.co
 export async function runHuggingFace(
   personImage: string,
   garmentImage: string
@@ -54,51 +56,52 @@ export async function runHuggingFace(
     throw new Error('HuggingFace token is not configured in environment variables.');
   }
 
-  console.log('[TRY-ON HUGGINGFACE] Submitting task to yisol/IDM-VTON...');
-  
-  // Clean base64 prefixes if present, as some HuggingFace endpoints expect raw base64 or files
-  // If it's a base64 string, strip the data:image/png;base64 prefix before sending
-  const cleanPersonImage = personImage.startsWith('data:') 
-    ? personImage.split(',')[1] 
-    : personImage;
-  const cleanGarmentImage = garmentImage.startsWith('data:') 
-    ? garmentImage.split(',')[1] 
-    : garmentImage;
+  console.log('[TRY-ON HUGGINGFACE] Connecting to yisol/IDM-VTON Gradio Space...');
 
-  const response = await fetch(
-    'https://api-inference.huggingface.co/models/yisol/IDM-VTON',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.HF_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: { 
-          human_img: cleanPersonImage, 
-          garm_img: cleanGarmentImage 
-        }
-      }),
-      signal: AbortSignal.timeout(90_000), // 90 seconds timeout
-    }
-  );
+  const { Client } = await import('@gradio/client');
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`HuggingFace returned error code ${response.status}: ${errText}`);
+  const client = await Client.connect('yisol/IDM-VTON', {
+    token: process.env.HF_TOKEN as `hf_${string}`,
+  });
+
+  // Convert base64/URL images to Blob for Gradio
+  const personBlob = await imageToBlob(personImage);
+  const garmentBlob = await imageToBlob(garmentImage);
+
+  console.log('[TRY-ON HUGGINGFACE] Submitting prediction to /tryon endpoint...');
+
+  const result = await client.predict('/tryon', [
+    { background: personBlob, layers: [], composite: personBlob }, // dict input for person image
+    garmentBlob,       // garment image
+    'clothing item',   // garment description
+    true,              // auto-generate mask
+    false,             // auto-crop & resizing
+    30,                // denoising steps
+    42,                // seed
+  ]);
+
+  const data = result.data as any[];
+  const output = data[0];
+
+  if (!output) {
+    throw new Error('HuggingFace IDM-VTON returned empty output.');
   }
 
-  const buffer = await response.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
+  // The output can be a URL string or an object with a .url property
+  const resultUrl = typeof output === 'string' ? output : output?.url ?? output;
+
+  console.log(`[TRY-ON HUGGINGFACE] ✓ Success in ${Date.now() - start}ms`);
 
   return {
-    resultUrl: `data:image/png;base64,${base64}`,
+    resultUrl,
     provider: 'huggingface',
     durationMs: Date.now() - start,
   };
 }
 
-// ─── PROVIDER 3: Kling AI via PiAPI (ALTERNATIVE) ────────
+// ─── PROVIDER 3: Kling AI via PiAPI ─────────────────────
+// BUG FIX: PiAPI wraps every response in { code, data: {...}, message }.
+// task_id is at data.task_id, NOT at the root level.
 export async function runKling(
   personImage: string,
   garmentImage: string,
@@ -134,15 +137,18 @@ export async function runKling(
 
   if (!submitRes.ok) {
     const errText = await submitRes.text();
-    throw new Error(`PiAPI task submission failed: ${errText}`);
+    throw new Error(`PiAPI task submission failed (HTTP ${submitRes.status}): ${errText}`);
   }
 
-  const { task_id, error } = await submitRes.json();
-  if (error) {
-    throw new Error(`Kling submission error: ${error}`);
+  const submitJson = await submitRes.json();
+  
+  // FIX: Extract task_id from the data envelope, not root level
+  const taskId = submitJson?.data?.task_id;
+  if (!taskId) {
+    throw new Error(`PiAPI submit returned no task_id. Full response: ${JSON.stringify(submitJson)}`);
   }
 
-  console.log(`[TRY-ON KLING] Task submitted. Task ID: ${task_id}. Polling...`);
+  console.log(`[TRY-ON KLING] Task submitted. Task ID: ${taskId}. Polling...`);
 
   // Step 2: Poll for result
   const maxPolls = 40; // 120 seconds max
@@ -152,8 +158,8 @@ export async function runKling(
 
     console.log(`[TRY-ON KLING] Polling task status (attempt ${i + 1}/${maxPolls})...`);
     const pollRes = await fetch(
-      `https://api.piapi.ai/api/v1/task/${task_id}`,
-      { headers: { 'x-api-key': process.env.PIAPI_KEY } }
+      `https://api.piapi.ai/api/v1/task/${taskId}`,
+      { headers: { 'x-api-key': process.env.PIAPI_KEY! } }
     );
     
     if (!pollRes.ok) {
@@ -161,25 +167,58 @@ export async function runKling(
       continue;
     }
 
-    const poll = await pollRes.json();
-    console.log(`[TRY-ON KLING] Current task status: ${poll.status}`);
+    const pollJson = await pollRes.json();
+    // FIX: Status is inside data envelope
+    const status = pollJson?.data?.status;
+    const output = pollJson?.data?.output;
+    
+    console.log(`[TRY-ON KLING] Current task status: ${status}`);
+    // Log full response for debugging output field structure
+    if (status === 'completed') {
+      console.log(`[TRY-ON KLING] Full completed response:`, JSON.stringify(pollJson));
+    }
 
-    if (poll.status === 'completed') {
-      const outputUrl = poll.output?.image_url || (Array.isArray(poll.output) ? poll.output[0] : poll.output);
-      if (!outputUrl) {
-        throw new Error('Kling task completed but returned no output URL.');
+    if (status === 'completed') {
+      // Try multiple possible output field locations
+      const resultUrl = 
+        output?.works?.[0]?.image?.resource ??
+        output?.image_url ??
+        output?.works?.[0]?.cover?.resource ??
+        (Array.isArray(output) ? output[0] : null) ??
+        output;
+        
+      if (!resultUrl || typeof resultUrl !== 'string') {
+        throw new Error(`Kling completed but could not parse output URL. Raw output: ${JSON.stringify(output)}`);
       }
+      
       return {
-        resultUrl: outputUrl,
+        resultUrl,
         provider: 'kling',
         durationMs: Date.now() - start,
       };
     }
     
-    if (poll.status === 'failed') {
-      throw new Error(`Kling task processing failed on server: ${poll.error || 'Unknown error'}`);
+    if (status === 'failed') {
+      throw new Error(`Kling task processing failed: ${JSON.stringify(pollJson?.data?.error || pollJson)}`);
     }
   }
 
   throw new Error('Kling processing timed out after 120 seconds.');
+}
+
+
+// ─── Helper: Convert base64 data URI or URL to Blob ─────
+async function imageToBlob(imageInput: string): Promise<Blob> {
+  if (imageInput.startsWith('data:')) {
+    // Base64 data URI → Blob
+    const [header, data] = imageInput.split(',');
+    const mimeMatch = header.match(/data:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const binary = Buffer.from(data, 'base64');
+    return new Blob([binary], { type: mime });
+  } else {
+    // URL → fetch and convert to Blob
+    const response = await fetch(imageInput);
+    return await response.blob();
+  }
 }
