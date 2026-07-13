@@ -65,7 +65,16 @@ export async function runHuggingFace(
     throw new Error(`Failed to import @gradio/client: ${importErr}`);
   }
 
-  let client: any;
+    let client: any;
+    let handle_file: any;
+  try {
+    const mod = await import('@gradio/client');
+    Client = mod.Client;
+    handle_file = mod.handle_file;
+  } catch (importErr) {
+    throw new Error(`Failed to import @gradio/client: ${importErr}`);
+  }
+
   try {
     client = await Client.connect('yisol/IDM-VTON', {
       token: process.env.HF_TOKEN as `hf_${string}`,
@@ -79,18 +88,17 @@ export async function runHuggingFace(
     throw new Error(`Failed to connect to HF Space: ${msg}`);
   }
 
-  // Convert images to Blob for Gradio
-  console.log('[TRY-ON HF] Converting images to Blob format...');
-  const personBlob = await imageToBlob(personImage);
-  const garmentBlob = await imageToBlob(garmentImage);
-
-  console.log('[TRY-ON HF] Submitting prediction to /tryon endpoint...');
+  console.log('[TRY-ON HF] Submitting prediction to /tryon endpoint with URLs...');
 
   let result: any;
   try {
+    // Gradio handle_file perfectly wraps URLs into FileData for the backend
+    const personFile = handle_file(personImage);
+    const garmentFile = handle_file(garmentImage);
+
     result = await client.predict('/tryon', [
-      { background: personBlob, layers: [], composite: personBlob },
-      garmentBlob,
+      { background: personFile, layers: [], composite: null },
+      garmentFile,
       'clothing item',   // garment description
       true,              // auto-generate mask
       false,             // auto-crop & resizing
@@ -141,12 +149,6 @@ export async function runKling(
   }
 
   console.log('[TRY-ON KLING] Submitting ai_try_on task to PiAPI...');
-
-  // PiAPI expects URLs for image inputs, not base64.
-  // If the input is base64, we cannot use it directly — log a warning.
-  if (personImage.startsWith('data:')) {
-    console.warn('[TRY-ON KLING] WARNING: personImage is base64. PiAPI may require URLs. Attempting anyway...');
-  }
 
   const submitRes = await fetch('https://api.piapi.ai/api/v1/task', {
     method: 'POST',
@@ -235,26 +237,4 @@ export async function runKling(
   }
 
   throw new Error('Kling processing timed out after 120 seconds.');
-}
-
-
-// ─── Helper: Convert base64 data URI or URL to Blob ─────
-async function imageToBlob(imageInput: string): Promise<Blob> {
-  if (imageInput.startsWith('data:')) {
-    // Base64 data URI → Blob
-    const commaIdx = imageInput.indexOf(',');
-    const header = imageInput.slice(0, commaIdx);
-    const data = imageInput.slice(commaIdx + 1);
-    const mimeMatch = header.match(/data:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-    const binary = Buffer.from(data, 'base64');
-    return new Blob([binary], { type: mime });
-  } else {
-    // URL → fetch and convert to Blob
-    const response = await fetch(imageInput, { signal: AbortSignal.timeout(15_000) });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image from URL (${response.status}): ${imageInput.slice(0, 100)}`);
-    }
-    return await response.blob();
-  }
 }
