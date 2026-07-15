@@ -11,9 +11,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const SECTION_MAP: Record<string, string[]> = {
-  mens:        ['Shirts', 'Pants', 'Jeans', 'Polos'],
-  womens:      ['Shirts', 'Pants', 'Jeans', 'Polos'],
-  accessories: ['Watches', 'Bags', 'Sunglasses', 'Jewelry'],
+  mens:        ['Shirts', 'Pants', 'Jeans', 'Sneakers', 'Accessories'],
+  womens:      ['Shirts', 'Pants', 'Jeans', 'Sneakers', 'Accessories'],
+  accessories: ['Accessories', 'Watches', 'Bags', 'Sunglasses', 'Jewelry'],
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

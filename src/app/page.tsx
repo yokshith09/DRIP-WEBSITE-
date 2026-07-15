@@ -103,6 +103,7 @@ export default function Home() {
   const MENS_PRODUCTS = isMounted ? products.filter(p => p.category === 'mens' && p.subcategory !== 'Sneakers').slice(0, 4) : [];
   const WOMENS_PRODUCTS = isMounted ? products.filter(p => p.category === 'womens').slice(0, 4) : [];
   const SNEAKER_PRODUCTS = isMounted ? products.filter(p => p.subcategory === 'Sneakers').slice(0, 4) : [];
+  const ACCESSORIES_PRODUCTS = isMounted ? products.filter(p => p.category === 'accessories' || p.subcategory === 'Accessories').slice(0, 4) : [];
 
   useEffect(() => {
     const t = setInterval(() => setHeroSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
@@ -254,13 +255,40 @@ export default function Home() {
 
 
 
+      {/* ══════ SNEAKERS CATEGORY GRID ══════ */}
+      {SNEAKER_PRODUCTS.length > 0 && (
+        <section className="py-20 md:py-28 bg-white border-t border-[#EDE9E3]">
+          <div className="max-w-[1400px] mx-auto px-5 md:px-12">
+            <SectionHeading title="SHOP SNEAKERS" align="center" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+              {SNEAKER_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} />)}
+            </div>
+            <div className="mt-12 text-center">
+              <Link href="/collections/mens" className="inline-block bg-black text-white px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral transition-colors shadow-lg">View All Sneakers</Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ══════ ACCESSORIES CATEGORY GRID ══════ */}
       <section className="py-16 md:py-24 bg-gray-950 text-white border-t border-gray-900">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 mb-10 md:mb-12 text-center">
           <span className="block text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-2">The Vault</span>
           <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.1em] text-white">ACCESSORIES</h2>
         </div>
-        <CollectionGrid collections={ACCESSORIES_COLLECTIONS} dark={true} />
+        
+        {ACCESSORIES_PRODUCTS.length > 0 ? (
+          <div className="max-w-[1400px] mx-auto px-5 md:px-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {ACCESSORIES_PRODUCTS.map(p => <ProductCard key={p.id} product={p as any} onTryOn={setTryOnProduct} dark={true} />)}
+            </div>
+            <div className="mt-12 text-center">
+              <Link href="/collections/accessories" className="inline-block bg-white text-black px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-drip-coral hover:text-white transition-colors shadow-lg">View All Accessories</Link>
+            </div>
+          </div>
+        ) : (
+          <CollectionGrid collections={ACCESSORIES_COLLECTIONS} dark={true} />
+        )}
       </section>
 
       {/* ══════ THE DRIP STANDARD (ABOUT US) ══════ */}
